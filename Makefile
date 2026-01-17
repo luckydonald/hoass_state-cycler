@@ -7,7 +7,7 @@ BACKEND  ?= $(if $(wildcard custom_components),1,0)
 .PHONY: release lint format build setup help commit init fix-commits
 
 help:
-	@echo "Plugin Template - Development Commands"
+	@echo "State Cycler - Development Commands"
 	@echo ""
 	@echo "Usage: make <target> [FRONTEND=1] [BACKEND=1]"
 	@echo ""

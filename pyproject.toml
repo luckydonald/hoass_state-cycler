@@ -1,5 +1,5 @@
 [project]
-name = "hoass-plugin-template"
+name = "hoass-state-cycler"
 readme = "README.md"
 version = "0.0.0-pre0"
 description = "Add your description here"
@@ -29,13 +29,13 @@ python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = [
     "--strict-markers",
-    "--cov=custom_components.plugin_template",
+    "--cov=custom_components.state_cycler",
     "--cov-report=term-missing",
     "--cov-report=html",
 ]
 
 [tool.coverage.run]
-source = ["custom_components/plugin_template"]
+source = ["custom_components/state_cycler"]
 omit = [
     "tests/*",
     "**/__pycache__/*",
