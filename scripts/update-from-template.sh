@@ -124,6 +124,31 @@ continue_rebase() {
         return 1
     fi
 
+    # Check if conflicts are still unresolved
+    local unmerged_files=$(git diff --name-only --diff-filter=U 2>/dev/null)
+    if [ -n "$unmerged_files" ]; then
+        local needs_manual=true
+        for file in $unmerged_files; do
+            # Check if file still has conflict markers
+            if ! grep -q "^<<<<<<< " "$file" 2>/dev/null; then
+                # File appears resolved but not staged - add it automatically
+                print_info "Auto-staging resolved file: $file"
+                git add "$file"
+            else
+                needs_manual=false
+                break
+            fi
+        done
+
+        # Re-check after auto-staging
+        unmerged_files=$(git diff --name-only --diff-filter=U 2>/dev/null)
+        if [ -n "$unmerged_files" ]; then
+            print_error "Conflicts are still present in: $unmerged_files"
+            print_error "Please resolve all conflicts and stage the files with 'git add <file>' before continuing."
+            return 1
+        fi
+    fi
+
     print_info "Continuing rebase after manual resolution..."
 
     # Uncomment merge details in the commit message
@@ -135,10 +160,8 @@ continue_rebase() {
     fi
 
     if [ -n "$message_file" ] && [ -f "$message_file" ]; then
-        # Uncomment conflict details (remove leading # from conflict lines)
-        sed -i 's/^# Conflicts:/Conflicts:/' "$message_file"
-        sed -i 's/^# \t/\t/' "$message_file"  # Uncomment indented conflict file lines
-        sed -i 's/^# /\t/' "$message_file"   # Also handle space instead of tab
+        # Escape # at start of lines to prevent them from being treated as comments
+        sed -i 's/^#/\\#/' "$message_file" 2>/dev/null || true
     fi
 
     # Prevent git from opening editor by setting GIT_EDITOR to true
@@ -215,7 +238,19 @@ handle_conflicts() {
         exit 1
     fi
 
-    continue_rebase
+    # Allow retries if conflicts aren't fully resolved
+    while true; do
+        if continue_rebase; then
+            break
+        fi
+        echo ""
+        read -p "Press Enter to try again after resolving remaining conflicts, or 'a' to abort: " retry_response
+        if [ "$retry_response" = "a" ]; then
+            git rebase --abort
+            print_warning "Rebase aborted"
+            exit 1
+        fi
+    done
 }
 
 # Main script
