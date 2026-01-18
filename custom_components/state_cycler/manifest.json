@@ -3,12 +3,12 @@
   "name": "State Cycler",
   "codeowners": ["@luckydonald", "@luckylucy"],
   "config_flow": true,
-  "dependencies": ["lovelace"],
+  "dependencies": [],
   "documentation": "https://github.com/luckydonald/hoass_state-cycler",
-  "integration_type": "service",
-  "iot_class": "local_polling",
+  "integration_type": "entity",
+  "iot_class": "calculated",
   "issue_tracker": "https://github.com/luckydonald/hoass_state-cycler/issues",
   "requirements": [],
-  "version": "0.0.0-dev0"
+  "version": "1.0.0"
 }
 
