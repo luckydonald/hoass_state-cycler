@@ -47,7 +47,7 @@ print_success() {
 
 # Function to get current timestamp for template variables
 get_timestamp() {
-    date +"%Y-%m-%d-%H-%M-%S"
+    date +"%Y-%m-%d_%H-%M-%S"
 }
 
 # Function to detect TEMPLATE_REMOTE
@@ -59,7 +59,6 @@ detect_template_remote() {
     for name in "${preferred_names[@]}"; do
         if git remote | grep -q "^${name}$"; then
             template_remote="$name"
-            print_info "Found preferred template remote: $template_remote"
             break
         fi
     done
@@ -70,7 +69,6 @@ detect_template_remote() {
             local url=$(git remote get-url "$remote" 2>/dev/null || echo "")
             if [[ "$url" =~ github\.com/luckydonald/hoass_(plugin[-_])?template(\.git)?$ ]]; then
                 template_remote="$remote"
-                print_info "Found template remote by URL: $template_remote ($url)"
                 break
             fi
         done < <(git remote)
@@ -81,7 +79,6 @@ detect_template_remote() {
         while IFS= read -r remote; do
             if [[ "$remote" =~ \btemplate\b ]]; then
                 template_remote="$remote"
-                print_info "Found template remote by name pattern: $template_remote"
                 break
             fi
         done < <(git remote)
@@ -243,7 +240,25 @@ fi
 
 # Detect template remote
 TEMPLATE_REMOTE=$(detect_template_remote)
-print_success "Using template remote: $TEMPLATE_REMOTE"
+if [ -n "$TEMPLATE_REMOTE" ]; then
+    remote_url=$(git remote get-url "$TEMPLATE_REMOTE" 2>/dev/null || echo "unknown")
+    print_success "Using template remote: $TEMPLATE_REMOTE ($remote_url)"
+
+    # Check if URL is a local path
+    if [[ "$remote_url" =~ ^(\.\./|\./|/|[A-Za-z]:) ]]; then
+        print_warning "Remote '$TEMPLATE_REMOTE' points to a local path '$remote_url', not a git URL."
+        print_info "This will cause fetch to fail. Consider setting it to the proper git URL:"
+        echo "  git remote set-url $TEMPLATE_REMOTE https://github.com/luckydonald/hoass_plugin-template.git"
+        read -p "Continue anyway? (y/N) " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            exit 1
+        fi
+    fi
+else
+    print_error "No template remote found"
+    exit 1
+fi
 
 # Fetch from template remote
 print_info "Fetching from $TEMPLATE_REMOTE..."
