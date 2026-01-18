@@ -178,11 +178,6 @@ const props = defineProps<{
   config: CardConfig;
 }>();
 
-// Emit for config changes
-const emit = defineEmits<{
-  'config-changed': [config: CardConfig];
-}>();
-
 // State
 const editMode = ref(false);
 const configStates = ref<string[]>([]);
@@ -249,7 +244,10 @@ const getEntityState = (entityId: string): HassEntity | null => {
 // Get friendly name for an entity
 const getEntityFriendlyName = (entityId: string): string => {
   const entity = getEntityState(entityId);
-  return entity?.attributes?.friendly_name || entityId;
+  if (entity && typeof entity.attributes?.friendly_name === 'string') {
+    return entity.attributes.friendly_name;
+  }
+  return typeof entityId === 'string' ? entityId : '';
 };
 
 // Helper to call service
