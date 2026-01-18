@@ -1,16 +1,16 @@
-"""Tests for Plugin Template constants."""
-from custom_components.plugin_template.const import DOMAIN, LOG_NAME
+"""Tests for State Cycler constants."""
+from custom_components.state_cycler.const import DOMAIN, LOG_NAME
 
 
 def test_domain_constant():
     """Test that DOMAIN is set correctly."""
-    assert DOMAIN == "plugin_template"
+    assert DOMAIN == "state_cycler"
     assert isinstance(DOMAIN, str)
 
 
 def test_log_name_constant():
     """Test that LOG_NAME is set correctly."""
-    assert LOG_NAME == "custom-components.plugin_template"
+    assert LOG_NAME == "custom-components.state_cycler"
     assert isinstance(LOG_NAME, str)
     assert DOMAIN in LOG_NAME
 
