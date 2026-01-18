@@ -73,3 +73,7 @@ Generate me a Homeassistant plugin based on the following description.
 
 Create the vue frontend in the frontend/ folder.
 Update the `README.md`.
+
+———
+
+Make sure it is showing up as integration in Home Assistant, with proper configuration options in the UI.
