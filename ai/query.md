@@ -77,3 +77,4 @@ Update the `README.md`.
 ———
 
 Make sure it is showing up as integration in Home Assistant, with proper configuration options in the UI.
+we should be able to create multiple of these cyclers? That's what I would do with the add integration button, add a new cycler, where I can then add entities
