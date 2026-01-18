@@ -1,123 +1,189 @@
-# State Cycler Development Progress
-
-## Completed Steps
-
-### Backend (Python) ✅
-- ✅ Created `__init__.py` with integration setup and config entry management
-- ✅ Created `const.py` with all constants, events, and service definitions
-  - Events: `cycled`, `initialized`, `cycle_timeout`
-  - Services: `next`, `prev`, `to`, `off`, `on`, `switch`, `cycle`
-  - Attributes: `state`, `state_friendly`, `index`, `toggle_state`, `include_off_state`, `last_state`, `last_index`, `timer_interval`, `states`
-- ✅ Created `state_cycler.py` (custom platform) with full `StateCyclerEntity` implementation
-  - State tracking and restoration with `RestoreEntity`
-  - All services implemented (next, prev, to, off, on, switch, cycle)
-  - Event firing (cycled, initialized, cycle_timeout)
-  - Timer management for automatic cycling
-  - Entity state saving/restoration (preserves light brightness, colors, etc.)
-  - Cycle mode with timeout logic
-- ✅ Created `config_flow.py` for UI configuration with options flow
-- ✅ Updated `manifest.json` with correct integration type and iot_class
-- ✅ Created `services.yaml` with service definitions for HA UI
-- ✅ Updated `strings.json` with config flow strings
-- ✅ Updated `translations/en.json` with English translations
-
-### Frontend (Vue/TS/SCSS) ✅
-- ✅ Created `StateCyclerCard.vue` with full UI implementation
-  - Display current state with friendly name and index
-  - Toggle button for on/off (switch service)
-  - Next button for manual cycling
-  - Cycle button with timeout logic
-  - Interactive states list - click to jump to specific state
-  - Edit mode for configuration
-    - Add/remove entities
-    - Reorder entities with up/down buttons
-    - Configure timer interval
-    - Toggle "include off state" setting
-  - Settings info display
-  - Proper Home Assistant styling with CSS variables
-- ✅ Types already defined in `types.ts` (HassEntity, HomeAssistant, CardConfig)
-
-## Implementation Details
-
-### Key Features Implemented
-
-1. **Entity Management**
-   - Custom `state_cycler` platform (not sensor or switch)
-   - State restoration on HA restart
-   - Entity state preservation (saves light settings before turning off)
-
-2. **Services**
-   - `next`: Cycles to next state
-   - `prev`: Cycles to previous state
-   - `to`: Jumps to specific index
-   - `off`: Turns off all states
-   - `on`: Restores last state or reapplies current
-   - `switch`: Toggles between on/off
-   - `cycle`: Smart cycling with timeout (for button presses)
-
-3. **Events**
-   - `state_cycler.cycled`: Fired on every cycle with detailed info
-   - `state_cycler.initialized`: Fired on entity load
-   - `state_cycler.cycle_timeout`: Fired when cycle mode times out
-
-4. **Automatic Timer**
-   - Optional configurable timer for automatic cycling
-   - Uses `async_track_time_interval` for efficiency
-
-5. **Frontend Card**
-   - Visual state display
-   - Control buttons (toggle, next, cycle)
-   - Clickable state list
-   - Edit mode for configuration
-   - Responsive design with HA theming
-
-## Testing Needed
-
-### Backend Tests
-- [ ] Test entity initialization and restoration
-- [ ] Test all service calls (next, prev, to, off, on, switch, cycle)
-- [ ] Test event firing with correct attributes
+- [ ] Test in actual Home Assistant instance
+- [ ] Test with various entity types (lights, switches, scenes)
+- [ ] Test state restoration after HA restart
 - [ ] Test timer functionality
-- [ ] Test entity state preservation
-- [ ] Test cycle mode timeout logic
+- [ ] Test with multiple State Cycler entities
+- [ ] Test frontend card integration
 
-### Frontend Tests
-- [ ] Test card rendering with different states
-- [ ] Test service calls from UI
-- [ ] Test edit mode functionality
-- [ ] Test entity reordering
-- [ ] Test configuration updates
-
-## Documentation Needed
-- [ ] Update README.md with:
-  - Installation instructions
-  - Configuration examples
-  - Service usage examples
-  - Event examples
-  - Frontend card configuration
-- [ ] Update CHANGELOG.md
-- [ ] Create example automations using events
-
-## Next Steps
-
-1. Write comprehensive backend unit tests
-2. Write frontend unit tests
-3. Update documentation
-4. Test integration in actual Home Assistant instance
-5. Create example configurations and automations
-6. Package for HACS installation
+### Enhancements (Future)
+- [ ] Drag-and-drop reordering in frontend
+- [ ] Entity picker with autocomplete
+- [ ] Config entry updates from frontend (requires HA API calls)
+- [ ] Visual state preview in frontend
+- [ ] Transition effects/animations
+- [ ] Import/export configurations
 
 ## Known Limitations
 
-1. Config editing in the frontend card currently only shows local state - actual persistence would require calling HA config entry update API
-2. Entity picker in edit mode is text input - could be enhanced with autocomplete from available entities
-3. Drag-and-drop reordering not implemented (using up/down buttons instead)
+1. **Config Editing**: Frontend edit mode shows local state only - actual persistence requires calling HA config entry update API (not yet implemented)
+2. **Entity Picker**: Uses text input - could be enhanced with autocomplete from available entities
+3. **Reordering**: Uses up/down buttons - drag-and-drop would be more intuitive
+4. **IDE Errors**: Expected errors in IDE (missing homeassistant module, Vue template parsing) - files will work correctly in HA
 
 ## Architecture Notes
 
-- Uses custom `state_cycler` platform (not a standard platform like sensor/switch)
-- Entity state is the entity_id of the active state or "off"
-- All configuration stored in config entry data
-- State restoration ensures cycler resumes after HA restart
-- Entity states (brightness, color, etc.) preserved in memory for restoration
+- **Custom Platform**: Uses `state_cycler` platform (not sensor/switch/etc.)
+- **Entity State**: Main state is the entity_id of active state or "off"
+- **State Preservation**: Saves entity attributes (brightness, color, etc.) in memory for restoration
+- **Config Storage**: All configuration in config entry data
+- **State Restoration**: Uses `RestoreEntity` to resume after HA restart
+- **Async Throughout**: Proper async/await for non-blocking operation
+
+## Files Created
+
+### Backend
+```
+custom_components/state_cycler/
+├── __init__.py
+├── const.py
+├── state_cycler.py        (entity platform)
+├── config_flow.py
+├── manifest.json
+├── services.yaml
+├── strings.json
+└── translations/
+    └── en.json
+```
+
+### Frontend
+```
+frontend/src/
+├── StateCyclerCard.vue
+└── types.ts              (already existed)
+```
+
+### Documentation
+```
+ai/
+└── PROGRESS.md           (this file)
+```
+
+## Next Steps
+
+1. Write comprehensive unit tests for backend
+2. Write frontend unit tests
+3. Test in actual Home Assistant instance
+4. Update README.md with examples and screenshots
+5. Update CHANGELOG.md
+6. Create example automations
+7. Package for HACS distribution
+# State Cycler Development Progress
+
+## ✅ Completed - Backend (Python)
+
+### Core Files
+- ✅ `__init__.py` - Integration setup with config entry management
+- ✅ `const.py` - All constants, events, and service definitions
+- ✅ `state_cycler.py` - Custom platform entity with full implementation
+- ✅ `config_flow.py` - UI configuration with options flow
+- ✅ `manifest.json` - Integration metadata
+- ✅ `services.yaml` - Service definitions for HA UI
+- ✅ `strings.json` - Config flow UI strings
+- ✅ `translations/en.json` - English translations
+
+### Features Implemented
+
+#### Entity Platform
+- Custom `state_cycler` platform (entity type: `state_cycler.cycler`)
+- State restoration on HA restart using `RestoreEntity`
+- Entity state preservation (saves light brightness, colors, etc. before turning off)
+- Async/await throughout for efficient operation
+
+#### Services
+- ✅ `next` - Cycles to next state in list
+- ✅ `prev` - Cycles to previous state  
+- ✅ `to` - Jumps to specific index (with bounds checking)
+- ✅ `off` - Turns off all states
+- ✅ `on` - Restores last state or reapplies current
+- ✅ `switch` - Toggles between on/off
+- ✅ `cycle` - Smart cycling with timeout logic (for button presses)
+
+#### Events
+- ✅ `state_cycler.cycled` - Fired on every cycle with:
+  - `entity_id`, `index`, `direction`, `index_difference`
+  - `wrapped`, `last_index`, `last_entity_id`
+  - `timer`, `mode`, `command`
+- ✅ `state_cycler.initialized` - Fired on entity load/reload
+- ✅ `state_cycler.cycle_timeout` - Fired when cycle mode times out
+
+#### Attributes
+- ✅ `friendly_name` - Entity name
+- ✅ `state` - Current entity_id or "off"
+- ✅ `state_friendly` - Friendly name of current state
+- ✅ `index` - Current index (-1 for off)
+- ✅ `toggle_state` - Boolean on/off state
+- ✅ `include_off_state` - Whether to include off in cycle
+- ✅ `last_state` - Last active state entity_id
+- ✅ `last_index` - Last active index
+- ✅ `timer_interval` - Auto-cycle interval in seconds
+- ✅ `states` - List of configured entity IDs
+
+#### Timer Management
+- ✅ Optional automatic cycling timer (`async_track_time_interval`)
+- ✅ Cycle mode timeout logic (for button press use case)
+- ✅ Proper cleanup on entity removal
+
+## ✅ Completed - Frontend (Vue/TS/SCSS)
+
+### Core Files
+- ✅ `StateCyclerCard.vue` - Full UI implementation
+- ✅ `types.ts` - TypeScript type definitions (already existed)
+
+### Features Implemented
+
+#### Display Mode
+- ✅ Current state display with friendly name and index
+- ✅ Toggle button for on/off (calls `switch` service)
+- ✅ Next button for manual cycling
+- ✅ Cycle button with timeout logic
+- ✅ Interactive states list - click to jump to specific state
+- ✅ Settings info display (include_off_state, timer_interval)
+- ✅ Proper Home Assistant styling with CSS variables
+
+#### Edit Mode
+- ✅ Toggle between view/edit modes
+- ✅ Entity list management:
+  - Add entities via text input
+  - Remove entities
+  - Reorder with up/down buttons
+- ✅ Configure timer interval (number input)
+- ✅ Toggle "include off state" (checkbox)
+- ✅ Visual feedback for current state
+
+#### Styling
+- ✅ Responsive design
+- ✅ HA theme integration (CSS variables)
+- ✅ Hover effects and transitions
+- ✅ Active state highlighting
+- ✅ Icon integration (mdi icons)
+
+## 📝 TODO
+
+### Testing
+- [ ] Backend unit tests
+  - [ ] Test entity initialization and restoration
+  - [ ] Test all service calls
+  - [ ] Test event firing
+  - [ ] Test timer functionality  
+  - [ ] Test entity state preservation
+  - [ ] Test cycle mode timeout
+- [ ] Frontend unit tests
+  - [ ] Test card rendering
+  - [ ] Test service calls from UI
+  - [ ] Test edit mode functionality
+  - [ ] Test configuration updates
+
+### Documentation
+- [ ] Update README.md with:
+  - [ ] Installation instructions (HACS + manual)
+  - [ ] Configuration examples
+  - [ ] Service usage examples
+  - [ ] Event examples with automations
+  - [ ] Frontend card configuration
+  - [ ] Screenshots/GIFs
+- [ ] Update CHANGELOG.md
+- [ ] Create example automations
+- [ ] Create example Lovelace configurations
+
+### Integration Testing
 
