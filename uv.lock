@@ -876,19 +876,19 @@ name = "bleak"
 version = "2.1.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "dbus-fast", marker = "sys_platform == 'linux'" },
-    { name = "pyobjc-core", marker = "sys_platform == 'darwin'" },
-    { name = "pyobjc-framework-corebluetooth", marker = "sys_platform == 'darwin'" },
-    { name = "pyobjc-framework-libdispatch", marker = "sys_platform == 'darwin'" },
-    { name = "winrt-runtime", marker = "sys_platform == 'win32'" },
-    { name = "winrt-windows-devices-bluetooth", marker = "sys_platform == 'win32'" },
-    { name = "winrt-windows-devices-bluetooth-advertisement", marker = "sys_platform == 'win32'" },
-    { name = "winrt-windows-devices-bluetooth-genericattributeprofile", marker = "sys_platform == 'win32'" },
-    { name = "winrt-windows-devices-enumeration", marker = "sys_platform == 'win32'" },
-    { name = "winrt-windows-devices-radios", marker = "sys_platform == 'win32'" },
-    { name = "winrt-windows-foundation", marker = "sys_platform == 'win32'" },
-    { name = "winrt-windows-foundation-collections", marker = "sys_platform == 'win32'" },
-    { name = "winrt-windows-storage-streams", marker = "sys_platform == 'win32'" },
+    { name = "dbus-fast", marker = "platform_system == 'Linux'" },
+    { name = "pyobjc-core", marker = "platform_system == 'Darwin'" },
+    { name = "pyobjc-framework-corebluetooth", marker = "platform_system == 'Darwin'" },
+    { name = "pyobjc-framework-libdispatch", marker = "platform_system == 'Darwin'" },
+    { name = "winrt-runtime", marker = "platform_system == 'Windows'" },
+    { name = "winrt-windows-devices-bluetooth", marker = "platform_system == 'Windows'" },
+    { name = "winrt-windows-devices-bluetooth-advertisement", marker = "platform_system == 'Windows'" },
+    { name = "winrt-windows-devices-bluetooth-genericattributeprofile", marker = "platform_system == 'Windows'" },
+    { name = "winrt-windows-devices-enumeration", marker = "platform_system == 'Windows'" },
+    { name = "winrt-windows-devices-radios", marker = "platform_system == 'Windows'" },
+    { name = "winrt-windows-foundation", marker = "platform_system == 'Windows'" },
+    { name = "winrt-windows-foundation-collections", marker = "platform_system == 'Windows'" },
+    { name = "winrt-windows-storage-streams", marker = "platform_system == 'Windows'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/45/8a/5acbd4da6a5a301fab56ff6d6e9e6b6945e6e4a2d1d213898c21b1d3a19b/bleak-2.1.1.tar.gz", hash = "sha256:4600cc5852f2392ce886547e127623f188e689489c5946d422172adf80635cf9", size = 120634 }
 wheels = [
@@ -901,8 +901,8 @@ version = "4.5.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "bleak" },
-    { name = "bluetooth-adapters", marker = "sys_platform == 'linux'" },
-    { name = "dbus-fast", marker = "sys_platform == 'linux'" },
+    { name = "bluetooth-adapters", marker = "platform_system == 'Linux'" },
+    { name = "dbus-fast", marker = "platform_system == 'Linux'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/87/e1/28c82e31f4f1c555c029598225b8d895bb3ccdc6c99b0974a1322f9725a9/bleak_retry_connector-4.5.0.tar.gz", hash = "sha256:5db81f8510c63cbea7b85d94bfa2b0fd9a24f0704474a49727a634488623fa17", size = 18648 }
 wheels = [
@@ -916,7 +916,7 @@ source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiooui" },
     { name = "bleak" },
-    { name = "dbus-fast", marker = "sys_platform == 'linux'" },
+    { name = "dbus-fast", marker = "platform_system == 'Linux'" },
     { name = "uart-devices" },
     { name = "usb-devices" },
 ]
@@ -2051,7 +2051,7 @@ dependencies = [
     { name = "bluetooth-auto-recovery" },
     { name = "bluetooth-data-tools" },
     { name = "btsocket" },
-    { name = "dbus-fast", marker = "sys_platform == 'linux'" },
+    { name = "dbus-fast", marker = "platform_system == 'Linux'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/af/89/0da109c6ed1704c991f9d466a3dbee99f8a921d006d6f44eac84fff95da7/habluetooth-5.8.0.tar.gz", hash = "sha256:7ecbe1ad6a4d3610f918dbe573bb9bee16064e7a4a61c95c37ef22b0c4533493", size = 49177 }
 wheels = [
@@ -2222,7 +2222,7 @@ wheels = [
 ]
 
 [[package]]
-name = "hoass-plugin-template"
+name = "hoass-state-cycler"
 version = "0.0.0rc0"
 source = { virtual = "." }
 
