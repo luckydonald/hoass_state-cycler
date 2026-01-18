@@ -9,7 +9,7 @@
 [![GitHub Release](https://img.shields.io/github/release/luckydonald/hoass_plugin-template.svg)](https://github.com/luckydonald/hoass_plugin-template/releases)
 [![CI](https://github.com/luckydonald/hoass_plugin-template/actions/workflows/ci.yml/badge.svg)](https://github.com/luckydonald/hoass_plugin-template/actions/workflows/ci.yml)
 
-[![License](https://img.shields.io/github/license/luckydonald/hoass_plugin-template.svg)](LICENSE)
+[![License](https://img.shields.io/github/license/luckydonald/hoass_plugin-template.svg)](https://github.com/luckydonald/hoass_plugin-template/blob/mane/LICENSE)
 ![AI Usage: marked](https://img.shields.io/badge/AI-Usage%20marked-brightgreen.svg)
 
 ![Vue 3.5](https://img.shields.io/badge/Vue-3.5-4FC08D.svg)
@@ -24,7 +24,7 @@
 
 ### HACS (Recommended)
 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=luckydonald&repository=hoass_plugin-template&category=integration)
+[![Open in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=luckydonald&repository=hoass_plugin-template&category=integration)
 
 Or manually:
 
