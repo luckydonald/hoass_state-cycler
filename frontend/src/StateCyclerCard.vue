@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {
-  ref,
   computed,
+  ref,
 } from 'vue';
 import type {
   CardConfig,
@@ -193,4 +193,3 @@ ha-card {
   font-style: italic;
 }
 </style>
-
