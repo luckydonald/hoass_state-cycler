@@ -507,3 +507,8 @@ Error: Process completed with exit code 1.
 ———
 
 that does not look like the file it should be
+
+———
+
+the hassfest test on github failed:
+invalid slug True (try true) @ data[True]. Got {'name': 'Turn On', 'description': 'Turn on the last selected state, or reapply the current state if already on.', 'target': {'entity': {'domain': 'state_cycler'}}} 
