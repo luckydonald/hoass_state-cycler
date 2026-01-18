@@ -1,0 +1,59 @@
+next:
+  name: Next
+  description: Cycle to the next state in the list.
+  target:
+    entity:
+      domain: state_cycler
+
+prev:
+  name: Previous
+  description: Cycle to the previous state in the list.
+  target:
+    entity:
+      domain: state_cycler
+
+to:
+  name: To Index
+  description: Cycle to a specific index in the states list.
+  target:
+    entity:
+      domain: state_cycler
+  fields:
+    index:
+      name: Index
+      description: The index of the state to activate (0-based).
+      required: true
+      example: 2
+      selector:
+        number:
+          min: 0
+          mode: box
+
+off:
+  name: Turn Off
+  description: Turn off all states.
+  target:
+    entity:
+      domain: state_cycler
+
+on:
+  name: Turn On
+  description: Turn on the last selected state, or reapply the current state if already on.
+  target:
+    entity:
+      domain: state_cycler
+
+switch:
+  name: Switch
+  description: Toggle between on and off.
+  target:
+    entity:
+      domain: state_cycler
+
+cycle:
+  name: Cycle
+  description: Cycle through states with timeout logic. First press turns on first state, subsequent presses cycle through. After timeout, next press turns off.
+  target:
+    entity:
+      domain: state_cycler
+
