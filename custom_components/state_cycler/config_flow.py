@@ -1,4 +1,5 @@
 """Config flow for State Cycler integration."""
+
 from __future__ import annotations
 
 import logging
@@ -41,9 +42,7 @@ class StateCyclerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             data_schema=vol.Schema(
                 {
                     vol.Required("name", default=DEFAULT_NAME): str,
-                    vol.Optional(CONF_STATES, default=[]): vol.All(
-                        list, [str]
-                    ),
+                    vol.Optional(CONF_STATES, default=[]): vol.All(list, [str]),
                     vol.Optional(
                         CONF_INCLUDE_OFF_STATE, default=DEFAULT_INCLUDE_OFF_STATE
                     ): bool,
@@ -98,4 +97,3 @@ class StateCyclerOptionsFlow(config_entries.OptionsFlow):
                 }
             ),
         )
-
