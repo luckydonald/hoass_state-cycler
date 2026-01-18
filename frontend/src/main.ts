@@ -72,86 +72,18 @@ class StateCyclerCardElement extends HTMLElement {
     return 4;
   }
 
-  public static getConfigElement(): StateCyclerCardEditor {
-    return document.createElement('state-cycler-card-editor') as StateCyclerCardEditor;
-  }
-
   public static getStubConfig(): StateCyclerCardConfig {
     return {
       type: 'custom:state-cycler-card',
       title: 'State Cycler',
-    this._config = config;
-    this._render();
-  }
-
-  private _render(): void {
-    if (!this._hass) return;
-    this._renderManual();
-  }
-
-  private _renderManual(): void {
-    this.innerHTML = '';
-
-    const wrapper = document.createElement('div');
-    wrapper.style.padding = '16px';
-    wrapper.style.display = 'flex';
-    wrapper.style.flexDirection = 'column';
-    wrapper.style.gap = '16px';
-
-    // Title input
-    wrapper.appendChild(this._createTextInput(
-      'title',
-      'Card Title',
-      this._config.title ?? 'State Cycler',
-    ));
-
-    // Entity picker (optional)
-    wrapper.appendChild(this._createEntityPicker());
-
-
-    this.appendChild(wrapper);
-  }
-
-    // Entity picker (optional)
-    name: string,
-    label: string,
-    this.appendChild(wrapper);
-  }
-    options.forEach((opt) => {
-      const optionEl = document.createElement('mwc-list-item');
-    // Entity picker (optional)
-      optionEl.textContent = opt.label;
-      if (opt.value === value) {
-    this.appendChild(wrapper);
-  }
-  }
-
-  private _fireConfigChanged(): void {
-    const event = new CustomEvent('config-changed', {
-      detail: { config: this._config },
-      bubbles: true,
-      composed: true,
-    });
-    this.dispatchEvent(event);
+    };
   }
 }
 
-// Register custom elements
+// Register custom element
 customElements.define('state-cycler-card', StateCyclerCardElement);
-customElements.define('state-cycler-card-editor', StateCyclerCardEditor);
 
 // Register with Home Assistant's custom card registry
-declare global {
-  interface Window {
-    customCards: Array<{
-      type: string;
-      name: string;
-      description: string;
-      preview?: boolean;
-    }>;
-  }
-}
-
 window.customCards = window.customCards || [];
 window.customCards.push({
   type: 'state-cycler-card',
@@ -161,7 +93,7 @@ window.customCards.push({
 });
 
 console.info(
-  '%c PLUGIN-TEMPLATE-CARD %c 0.0.0-dev0 ',
+  '%c STATE-CYCLER-CARD %c 0.0.0-dev0 ',
   'color: white; background: #3498db; font-weight: bold;',
   'color: #3498db; background: white; font-weight: bold;',
 );
