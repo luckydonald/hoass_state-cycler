@@ -68,3 +68,7 @@ Generate me a Homeassistant plugin based on the following description.
   - a "next" button (the `next` action) (like the ident button on a light), so that the user can manually cycle to the next state.
   - a "cycle" button (the `cycle` action)
 - The user can also configure an optional timer interval, so that the cycling happens automatically every x seconds minutes.
+
+———
+
+Create the vue frontend in the frontend/ folder.
