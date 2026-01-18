@@ -1,0 +1,11 @@
+{
+  "display_name": "State Cycler",
+  "dash_name": "state-cycler",
+  "snake_name": "state_cycler",
+  "pascal_name": "StateCycler",
+  "github_user": "luckydonald",
+  "github_url": "https://github.com/luckydonald/hoass_state-cycler.git",
+  "keep_backend": true,
+  "frontend_choice": "vue",
+  "current_year": 2026
+}
