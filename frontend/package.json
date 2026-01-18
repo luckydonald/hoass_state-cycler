@@ -1,11 +1,11 @@
 {
-  "name": "plugin-template-card",
+  "name": "state-cycler-card",
   "version": "0.0.0-dev0",
-  "description": "Lovelace card for Plugin Template for Home Assistant",
-  "main": "dist/plugin-template-card.js",
+  "description": "Lovelace card for State Cycler for Home Assistant",
+  "main": "dist/state-cycler-card.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/luckydonald/hoass_plugin-template.git"
+    "url": "https://github.com/luckydonald/hoass_state-cycler.git"
   },
   "author": "luckydonald",
   "license": "MIT",
