@@ -1,18 +1,18 @@
 import { type App, type ComponentPublicInstance, createApp, h } from 'vue';
-import PluginTemplateCard from './PluginTemplateCard.vue';
+import StateCyclerCard from './StateCyclerCard.vue';
 import type { CardConfig, HomeAssistant } from './types';
 
-interface PluginTemplateCardConfig extends CardConfig {
+interface StateCyclerCardConfig extends CardConfig {
   type?: string;
 }
 
 interface AppData {
   hass: HomeAssistant | null;
-  config: PluginTemplateCardConfig;
+  config: StateCyclerCardConfig;
 }
 
-class PluginTemplateCardElement extends HTMLElement {
-  private _config: PluginTemplateCardConfig = {};
+class StateCyclerCardElement extends HTMLElement {
+  private _config: StateCyclerCardConfig = {};
   private _hass: HomeAssistant | null = null;
   private _app: App | null = null;
   private _root: HTMLDivElement | null = null;
@@ -25,7 +25,7 @@ class PluginTemplateCardElement extends HTMLElement {
     }
   }
 
-  public setConfig(config: PluginTemplateCardConfig): void {
+  public setConfig(config: StateCyclerCardConfig): void {
     this._config = config;
     if (this._app?._instance?.proxy) {
       const proxy = this._app._instance.proxy as ComponentPublicInstance & AppData;
@@ -51,7 +51,7 @@ class PluginTemplateCardElement extends HTMLElement {
       },
       render() {
         const data = this as unknown as AppData;
-        return h(PluginTemplateCard, {
+        return h(StateCyclerCard, {
           hass: data.hass,
           config: data.config,
         });
@@ -72,14 +72,14 @@ class PluginTemplateCardElement extends HTMLElement {
     return 4;
   }
 
-  public static getConfigElement(): PluginTemplateCardEditor {
-    return document.createElement('plugin-template-card-editor') as PluginTemplateCardEditor;
+  public static getConfigElement(): StateCyclerCardEditor {
+    return document.createElement('state-cycler-card-editor') as StateCyclerCardEditor;
   }
 
-  public static getStubConfig(): PluginTemplateCardConfig {
+  public static getStubConfig(): StateCyclerCardConfig {
     return {
-      type: 'custom:plugin-template-card',
-      title: 'Plugin Template',
+      type: 'custom:state-cycler-card',
+      title: 'State Cycler',
     this._config = config;
     this._render();
   }
@@ -102,7 +102,7 @@ class PluginTemplateCardElement extends HTMLElement {
     wrapper.appendChild(this._createTextInput(
       'title',
       'Card Title',
-      this._config.title ?? 'Plugin Template',
+      this._config.title ?? 'State Cycler',
     ));
 
     // Entity picker (optional)
@@ -137,8 +137,8 @@ class PluginTemplateCardElement extends HTMLElement {
 }
 
 // Register custom elements
-customElements.define('plugin-template-card', PluginTemplateCardElement);
-customElements.define('plugin-template-card-editor', PluginTemplateCardEditor);
+customElements.define('state-cycler-card', StateCyclerCardElement);
+customElements.define('state-cycler-card-editor', StateCyclerCardEditor);
 
 // Register with Home Assistant's custom card registry
 declare global {
@@ -154,8 +154,8 @@ declare global {
 
 window.customCards = window.customCards || [];
 window.customCards.push({
-  type: 'plugin-template-card',
-  name: 'Plugin Template Card',
+  type: 'state-cycler-card',
+  name: 'State Cycler Card',
   description: 'A template card for Home Assistant',
   preview: true,
 });
