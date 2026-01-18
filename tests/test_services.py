@@ -1,8 +1,8 @@
-"""Tests for Plugin Template services."""
+"""Tests for State Cycler services."""
 import pytest
 from unittest.mock import Mock, AsyncMock
 from homeassistant.core import HomeAssistant, ServiceCall
-from custom_components.plugin_template.services import (
+from custom_components.state_cycler.services import (
     async_setup_services,
     async_unload_services,
 )
