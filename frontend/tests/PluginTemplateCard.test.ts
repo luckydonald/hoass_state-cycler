@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
-import PluginTemplateCard from '../src/PluginTemplateCard.vue';
+import StateCyclerCard from '../src/StateCyclerCard.vue';
 import type { HomeAssistant, CardConfig } from '../src/types';
 
-describe('PluginTemplateCard', () => {
+describe('StateCyclerCard', () => {
   let mockHass: HomeAssistant;
   let mockConfig: CardConfig;
 
@@ -40,7 +40,7 @@ describe('PluginTemplateCard', () => {
   });
 
   it('renders with title', () => {
-    const wrapper = mount(PluginTemplateCard, {
+    const wrapper = mount(StateCyclerCard, {
       props: {
         hass: mockHass,
         config: mockConfig,
@@ -51,18 +51,18 @@ describe('PluginTemplateCard', () => {
   });
 
   it('uses default title when not configured', () => {
-    const wrapper = mount(PluginTemplateCard, {
+    const wrapper = mount(StateCyclerCard, {
       props: {
         hass: mockHass,
         config: {},
       },
     });
 
-    expect(wrapper.text()).toContain('Plugin Template');
+    expect(wrapper.text()).toContain('State Cycler');
   });
 
   it('displays current time', async () => {
-    const wrapper = mount(PluginTemplateCard, {
+    const wrapper = mount(StateCyclerCard, {
       props: {
         hass: mockHass,
         config: mockConfig,
@@ -82,7 +82,7 @@ describe('PluginTemplateCard', () => {
       entity: 'sensor.test',
     };
 
-    const wrapper = mount(PluginTemplateCard, {
+    const wrapper = mount(StateCyclerCard, {
       props: {
         hass: mockHass,
         config: configWithEntity,
@@ -99,7 +99,7 @@ describe('PluginTemplateCard', () => {
       entity: 'sensor.nonexistent',
     };
 
-    const wrapper = mount(PluginTemplateCard, {
+    const wrapper = mount(StateCyclerCard, {
       props: {
         hass: mockHass,
         config: configWithEntity,
@@ -110,7 +110,7 @@ describe('PluginTemplateCard', () => {
   });
 
   it('does not show entity section when no entity configured', () => {
-    const wrapper = mount(PluginTemplateCard, {
+    const wrapper = mount(StateCyclerCard, {
       props: {
         hass: mockHass,
         config: mockConfig,
@@ -121,7 +121,7 @@ describe('PluginTemplateCard', () => {
   });
 
   it('handles null hass gracefully', () => {
-    const wrapper = mount(PluginTemplateCard, {
+    const wrapper = mount(StateCyclerCard, {
       props: {
         hass: null,
         config: mockConfig,

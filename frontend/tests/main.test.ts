@@ -24,11 +24,11 @@ describe('main.ts registration', () => {
 
     // Check that customElements.define was called
     expect(global.customElements.define).toHaveBeenCalledWith(
-      'plugin-template-card',
+      'state-cycler-card',
       expect.any(Function),
     );
     expect(global.customElements.define).toHaveBeenCalledWith(
-      'plugin-template-card-editor',
+      'state-cycler-card-editor',
       expect.any(Function),
     );
   });

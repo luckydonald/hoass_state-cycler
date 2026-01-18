@@ -1,4 +1,4 @@
-"""Data models for Plugin Template."""
+"""Data models for State Cycler."""
 
 from __future__ import annotations
 
