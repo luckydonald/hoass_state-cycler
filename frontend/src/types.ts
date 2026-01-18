@@ -37,7 +37,7 @@ export interface CardConfig {
 }
 
 // State Cycler specific types
-export interface StateCyclerAttributes {
+export interface StateCyclerAttributes extends Record<string, unknown> {
   friendly_name?: string;
   state: string; // 'off' or entity_id
   state_friendly: string;
