@@ -5,8 +5,9 @@
         "title": "State Cycler Configuration",
         "description": "Configure a new State Cycler entity",
         "data": {
+
           "name": "Name",
-          "states": "Entity IDs (list of entities to cycle through)",
+          "states": "Entity IDs (one per line)",
           "include_off_state": "Include off state in cycle",
           "timer_interval": "Timer interval (seconds, optional)"
         }
@@ -19,7 +20,7 @@
         "title": "State Cycler Options",
         "description": "Configure State Cycler options",
         "data": {
-          "states": "Entity IDs (list of entities to cycle through)",
+          "states": "Entity IDs (one per line)",
           "include_off_state": "Include off state in cycle",
           "timer_interval": "Timer interval (seconds, optional)"
         }
