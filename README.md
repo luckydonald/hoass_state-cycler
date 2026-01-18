@@ -1,4 +1,4 @@
-# Home Assistant Plugin Template
+# Home Assistant State Cycler
 
 A modern, production-ready template for creating Home Assistant custom integrations with both Python backend and Vue.js frontend support.
 
@@ -17,7 +17,7 @@ A modern, production-ready template for creating Home Assistant custom integrati
 ### 1. Clone the Template
 
 ```bash
-git clone https://github.com/luckydonald/hoass_plugin-template.git my-plugin
+git clone https://github.com/luckydonald/hoass_state-cycler.git my-plugin
 cd my-plugin
 ```
 
@@ -57,7 +57,7 @@ make dev  # Frontend hot-reload
 ```
 hoass_template/
 ├── custom_components/
-│   └── plugin_template/       # Python integration
+│   └── state_cycler/       # Python integration
 │       ├── __init__.py       # Integration setup
 │       ├── sensor.py         # Sensor platform
 │       ├── services.py       # Custom services
@@ -67,7 +67,7 @@ hoass_template/
 │
 ├── frontend_vue/              # Vue.js frontend
 │   ├── src/
-│   │   ├── PluginTemplateCard.vue  # Main component
+│   │   ├── StateCyclerCard.vue  # Main component
 │   │   ├── main.ts           # Registration
 │   │   └── types.ts          # TypeScript types
 │   ├── tests/                # Frontend tests
