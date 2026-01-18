@@ -32,7 +32,7 @@ COMMIT_MSG_LINT="🔧 lint: {reason}"
 # -------------------------------------------------
 . "${SCRIPT_DIR}/tmpl.sh"
 
-echo -e "${GREEN}🚀 Plugin Template - Release Script${NC}"
+echo -e "${GREEN}🚀 State Cycler - Release Script${NC}"
 echo ""
 
 # Check we're in the right directory
@@ -226,8 +226,8 @@ echo "  2. Create a release zip"
 echo "  3. Publish to GitHub Releases"
 echo ""
 echo "View the release at:"
-echo "  https://github.com/luckydonald/hoass_plugin-template/releases/tag/v${NEW_VERSION}"
+echo "  https://github.com/luckydonald/hoass_state-cycler/releases/tag/v${NEW_VERSION}"
 echo ""
 echo "Install via HACS:"
-echo "  https://my.home-assistant.io/redirect/hacs_repository/?owner=luckydonald&repository=hoass_plugin-template&category=integration"
+echo "  https://my.home-assistant.io/redirect/hacs_repository/?owner=luckydonald&repository=hoass_state-cycler&category=integration"
 
