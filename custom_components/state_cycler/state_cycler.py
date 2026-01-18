@@ -1,75 +1,6 @@
-        elif self._cycle_mode_active:
-            # Continue cycling
-            await self.async_next()
-        else:
-            # Start cycle mode
-            self._cycle_mode_active = True
-            await self.async_next()
-
-        # Reset cycle mode timer
-        self._reset_cycle_timer()
-
-    def _reset_cycle_timer(self) -> None:
-        """Reset the cycle mode timer."""
-        if self._cycle_timer_cancel:
-            self._cycle_timer_cancel()
-
-        if self._timer_interval:
-            self._cycle_timer_cancel = self.hass.loop.call_later(
-                self._timer_interval, lambda: asyncio.create_task(self._cycle_timeout())
-            )
-
-    async def _cycle_timeout(self) -> None:
-        """Handle cycle timeout - next cycle will turn off."""
-        self._cycle_mode_active = False
-        self._cycle_timer_cancel = None
-
-        self.hass.bus.async_fire(
-            EVENT_CYCLE_TIMEOUT,
-            {
-                ATTR_ENTITY_ID: self._get_current_entity_id(),
-                ATTR_INDEX: self._current_index,
-            },
-        )
-
-    def _start_timer(self) -> None:
-        """Start the automatic cycling timer."""
-        if self._timer_interval and not self._timer_cancel:
-            self._timer_cancel = async_track_time_interval(
-                self.hass,
-                self._timer_callback,
-                timedelta(seconds=self._timer_interval),
-            )
-
-    @callback
-    def _timer_callback(self, now: Any) -> None:
-        """Handle timer callback."""
-        asyncio.create_task(self._timer_next())
 """State Cycler main logic."""
-    async def _timer_next(self) -> None:
-        """Cycle to next state via timer."""
-        if not self._states:
-            return
-
-        if self._current_index == -1:
-            new_index = 0
-        else:
-            new_index = (self._current_index + 1) % len(self._states)
-
-        await self._cycle_to_index(new_index, "next", "timer", "timer")
-
-    def _cancel_timers(self) -> None:
-        """Cancel all timers."""
-        if self._timer_cancel:
-            self._timer_cancel()
-            self._timer_cancel = None
-
-        if self._cycle_timer_cancel:
-            self._cycle_timer_cancel()
-            self._cycle_timer_cancel = None
 
 from __future__ import annotations
-
 import asyncio
 import logging
 from datetime import timedelta
@@ -505,4 +436,72 @@ class StateCyclerEntity(RestoreEntity, Entity):
             if self._states:
                 await self._cycle_to_index(0, "next", "cycle", SERVICE_CYCLE)
             self._cycle_mode_active = True
+        elif self._cycle_mode_active:
+            # Continue cycling
+            await self.async_next()
+        else:
+            # Start cycle mode
+            self._cycle_mode_active = True
+            await self.async_next()
 
+        # Reset cycle mode timer
+        self._reset_cycle_timer()
+
+    def _reset_cycle_timer(self) -> None:
+        """Reset the cycle mode timer."""
+        if self._cycle_timer_cancel:
+            self._cycle_timer_cancel()
+
+        if self._timer_interval:
+            self._cycle_timer_cancel = self.hass.loop.call_later(
+                self._timer_interval, lambda: asyncio.create_task(self._cycle_timeout())
+            )
+
+    async def _cycle_timeout(self) -> None:
+        """Handle cycle timeout - next cycle will turn off."""
+        self._cycle_mode_active = False
+        self._cycle_timer_cancel = None
+
+        self.hass.bus.async_fire(
+            EVENT_CYCLE_TIMEOUT,
+            {
+                ATTR_ENTITY_ID: self._get_current_entity_id(),
+                ATTR_INDEX: self._current_index,
+            },
+        )
+
+    def _start_timer(self) -> None:
+        """Start the automatic cycling timer."""
+        if self._timer_interval and not self._timer_cancel:
+            self._timer_cancel = async_track_time_interval(
+                self.hass,
+                self._timer_callback,
+                timedelta(seconds=self._timer_interval),
+            )
+
+    @callback
+    def _timer_callback(self, now: Any) -> None:
+        """Handle timer callback."""
+        asyncio.create_task(self._timer_next())
+
+    async def _timer_next(self) -> None:
+        """Cycle to next state via timer."""
+        if not self._states:
+            return
+
+        if self._current_index == -1:
+            new_index = 0
+        else:
+            new_index = (self._current_index + 1) % len(self._states)
+
+        await self._cycle_to_index(new_index, "next", "timer", "timer")
+
+    def _cancel_timers(self) -> None:
+        """Cancel all timers."""
+        if self._timer_cancel:
+            self._timer_cancel()
+            self._timer_cancel = None
+
+        if self._cycle_timer_cancel:
+            self._cycle_timer_cancel()
+            self._cycle_timer_cancel = None
