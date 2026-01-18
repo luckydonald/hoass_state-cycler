@@ -3,24 +3,17 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
-
-import voluptuous as vol
 
 from homeassistant.core import HomeAssistant, ServiceCall
-from homeassistant.helpers import config_validation as cv
 
-from .const import DOMAIN, LOG_NAME
+from .const import LOG_NAME
 
 _LOGGER = logging.getLogger(LOG_NAME)
 
 # Define your service schemas here
 # Example:
 # SERVICE_EXAMPLE = "example_service"
-# SERVICE_EXAMPLE_SCHEMA = vol.Schema({
-#     vol.Required("entity_id"): cv.entity_id,
-#     vol.Optional("param"): cv.string,
-# })
+# SERVICE_EXAMPLE_SCHEMA = None
 
 
 async def async_setup_services(hass: HomeAssistant) -> None:
@@ -49,4 +42,3 @@ async def async_unload_services(hass: HomeAssistant) -> None:
     # hass.services.async_remove(DOMAIN, SERVICE_EXAMPLE)
 
     _LOGGER.debug("Services unloaded")
-
