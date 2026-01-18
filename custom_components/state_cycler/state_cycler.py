@@ -1,185 +1,3 @@
-                            if k in ("brightness", "color_temp", "rgb_color", "effect")
-                        },
-                    },
-                    blocking=True,
-                )
-            elif saved_state["state"] == STATE_ON:
-                await self.hass.services.async_call(
-                    domain,
-                    SERVICE_TURN_ON,
-                    {ATTR_ENTITY_ID: entity_id},
-                    blocking=True,
-                )
-            elif domain == "scene":
-                await self.hass.services.async_call(
-                    domain,
-                    SERVICE_TURN_ON,
-                    {ATTR_ENTITY_ID: entity_id},
-                    blocking=True,
-                )
-
-    async def _turn_off_entity(self, entity_id: str) -> None:
-        """Turn off an entity."""
-        await self._save_entity_state(entity_id)
-        domain = entity_id.split(".")[0]
-
-        if domain != "scene":  # Scenes can't be turned off
-            await self.hass.services.async_call(
-                domain,
-                SERVICE_TURN_OFF,
-                {ATTR_ENTITY_ID: entity_id},
-                blocking=True,
-            )
-
-    async def _turn_on_entity(self, entity_id: str) -> None:
-        """Turn on an entity, restoring state if available."""
-        await self._restore_entity_state(entity_id)
-
-    async def _cycle_to_index(
-        self,
-        new_index: int,
-        direction: str = "next",
-        mode: str = "direct",
-        command: str = "to",
-    ) -> None:
-        """Cycle to a specific index."""
-        if not 0 <= new_index < len(self._states):
-            _LOGGER.error("Index %d out of bounds for %s", new_index, self.entity_id)
-            return
-
-        old_index = self._current_index
-        old_entity_id = self._get_current_entity_id()
-
-        # Turn off old state
-        if old_index != -1 and 0 <= old_index < len(self._states):
-            await self._turn_off_entity(self._states[old_index])
-
-        # Turn on new state
-        await self._turn_on_entity(self._states[new_index])
-
-        # Update state
-        self._last_index = old_index
-        self._current_index = new_index
-
-        # Calculate wrap and difference
-        index_diff = new_index - (old_index if old_index != -1 else -1)
-        wrapped = False
-
-        if direction == "next" and old_index != -1 and new_index < old_index:
-            wrapped = True
-        elif direction == "prev" and old_index != -1 and new_index > old_index:
-            wrapped = True
-
-        # Fire event
-        self.hass.bus.async_fire(
-            EVENT_CYCLED,
-            {
-                ATTR_ENTITY_ID: self._states[new_index],
-                ATTR_INDEX: new_index,
-                "direction": direction,
-                "index_difference": index_diff,
-                "wrapped": wrapped,
-                ATTR_LAST_INDEX: old_index,
-                "last_entity_id": old_entity_id,
-                "timer": self._timer_interval if mode == "timer" else None,
-                "mode": mode,
-                "command": command,
-            },
-        )
-
-        self.async_write_ha_state()
-
-    async def async_next(self, call: ServiceCall | None = None) -> None:
-        """Cycle to next state."""
-        if not self._states:
-            return
-
-        if self._current_index == -1:
-            new_index = 0
-        else:
-            new_index = (self._current_index + 1) % len(self._states)
-
-        await self._cycle_to_index(new_index, "next", "direct", SERVICE_NEXT)
-
-    async def async_prev(self, call: ServiceCall | None = None) -> None:
-        """Cycle to previous state."""
-        if not self._states:
-            return
-
-        if self._current_index == -1:
-            new_index = len(self._states) - 1
-        else:
-            new_index = (self._current_index - 1) % len(self._states)
-
-        await self._cycle_to_index(new_index, "prev", "direct", SERVICE_PREV)
-
-    async def async_to(self, call: ServiceCall) -> None:
-        """Cycle to specific index."""
-        index = call.data[ATTR_INDEX]
-
-        if not 0 <= index < len(self._states):
-            _LOGGER.error("Index %d out of bounds for %s", index, self.entity_id)
-            return
-
-        direction = "next" if index > self._current_index else "prev"
-        await self._cycle_to_index(index, direction, "direct", SERVICE_TO)
-
-    async def async_turn_off(self, **kwargs: Any) -> None:
-        """Turn off all states."""
-        old_index = self._current_index
-        old_entity_id = self._get_current_entity_id()
-
-        if old_index != -1 and 0 <= old_index < len(self._states):
-            await self._turn_off_entity(self._states[old_index])
-
-        self._last_index = old_index
-        self._current_index = -1
-
-        # Fire event
-        self.hass.bus.async_fire(
-            EVENT_CYCLED,
-            {
-                ATTR_ENTITY_ID: "Off",
-                ATTR_INDEX: -1,
-                "direction": "next" if self._include_off_state else "prev",
-                "index_difference": -1,
-                "wrapped": False,
-                ATTR_LAST_INDEX: old_index,
-                "last_entity_id": old_entity_id,
-                "timer": None,
-                "mode": "toggle",
-                "command": SERVICE_OFF,
-            },
-        )
-
-        self.async_write_ha_state()
-
-    async def async_turn_on(self, **kwargs: Any) -> None:
-        """Turn on last state or reapply current state."""
-        if self._current_index != -1:
-            # Reapply current state
-            await self._turn_on_entity(self._states[self._current_index])
-        elif self._last_index is not None and 0 <= self._last_index < len(self._states):
-            # Restore last state
-            await self._cycle_to_index(self._last_index, "next", "toggle", SERVICE_ON)
-        elif self._states:
-            # Turn on first state
-            await self._cycle_to_index(0, "next", "toggle", SERVICE_ON)
-
-    async def async_switch(self, call: ServiceCall | None = None) -> None:
-        """Toggle between on and off."""
-        if self._current_index == -1:
-            await self.async_turn_on()
-        else:
-            await self.async_turn_off()
-
-    async def async_cycle(self, call: ServiceCall | None = None) -> None:
-        """Cycle action with timer logic."""
-        if self._current_index == -1:
-            # Turn on first state
-            if self._states:
-                await self._cycle_to_index(0, "next", "cycle", SERVICE_CYCLE)
-            self._cycle_mode_active = True
         elif self._cycle_mode_active:
             # Continue cycling
             await self.async_next()
@@ -227,7 +45,7 @@
     def _timer_callback(self, now: Any) -> None:
         """Handle timer callback."""
         asyncio.create_task(self._timer_next())
-
+"""State Cycler main logic."""
     async def _timer_next(self) -> None:
         """Cycle to next state via timer."""
         if not self._states:
@@ -249,7 +67,7 @@
         if self._cycle_timer_cancel:
             self._cycle_timer_cancel()
             self._cycle_timer_cancel = None
-"""State Cycler entity platform."""
+
 from __future__ import annotations
 
 import asyncio
@@ -496,19 +314,195 @@ class StateCyclerEntity(RestoreEntity, Entity):
             }
 
     async def _restore_entity_state(self, entity_id: str) -> None:
-        """Restore a previously saved entity state."""
-        if entity_id in self._entity_states:
-            saved_state = self._entity_states[entity_id]
-            # For lights, restore with attributes; for switches, just turn on
-            domain = entity_id.split(".")[0]
-
-            if domain == "light" and "brightness" in saved_state["attributes"]:
+        """Restore the saved state of an entity."""
+        saved_state = self._get_saved_state(entity_id)
+        domain = entity_id.split(".")[0]
+        if saved_state:
+            if saved_state["state"] == "on":
                 await self.hass.services.async_call(
                     domain,
-                    SERVICE_TURN_ON,
+                    "turn_on",
+                    {"entity_id": entity_id},
+                    blocking=True,
+                )
+            elif domain == "scene":
+                await self.hass.services.async_call(
+                    domain,
+                    "turn_on",
+                    {"entity_id": entity_id},
+                    blocking=True,
+                )
+            else:
+                await self.hass.services.async_call(
+                    domain,
+                    "turn_on",
                     {
-                        ATTR_ENTITY_ID: entity_id,
-                        **{
-                            k: v
-                            for k, v in saved_state["attributes"].items()
+                        "entity_id": entity_id,
+                        # Add attribute restoration logic here if needed
+                    },
+                    blocking=True,
+                )
+
+    async def _turn_off_entity(self, entity_id: str) -> None:
+        """Turn off an entity."""
+        await self._save_entity_state(entity_id)
+        domain = entity_id.split(".")[0]
+
+        if domain != "scene":  # Scenes can't be turned off
+            await self.hass.services.async_call(
+                domain,
+                SERVICE_TURN_OFF,
+                {ATTR_ENTITY_ID: entity_id},
+                blocking=True,
+            )
+
+    async def _turn_on_entity(self, entity_id: str) -> None:
+        """Turn on an entity, restoring state if available."""
+        await self._restore_entity_state(entity_id)
+
+    async def _cycle_to_index(
+        self,
+        new_index: int,
+        direction: str = "next",
+        mode: str = "direct",
+        command: str = "to",
+    ) -> None:
+        """Cycle to a specific index."""
+        if not 0 <= new_index < len(self._states):
+            _LOGGER.error("Index %d out of bounds for %s", new_index, self.entity_id)
+            return
+
+        old_index = self._current_index
+        old_entity_id = self._get_current_entity_id()
+
+        # Turn off old state
+        if old_index != -1 and 0 <= old_index < len(self._states):
+            await self._turn_off_entity(self._states[old_index])
+
+        # Turn on new state
+        await self._turn_on_entity(self._states[new_index])
+
+        # Update state
+        self._last_index = old_index
+        self._current_index = new_index
+
+        # Calculate wrap and difference
+        index_diff = new_index - (old_index if old_index != -1 else -1)
+        wrapped = False
+
+        if direction == "next" and old_index != -1 and new_index < old_index:
+            wrapped = True
+        elif direction == "prev" and old_index != -1 and new_index > old_index:
+            wrapped = True
+
+        # Fire event
+        self.hass.bus.async_fire(
+            EVENT_CYCLED,
+            {
+                ATTR_ENTITY_ID: self._states[new_index],
+                ATTR_INDEX: new_index,
+                "direction": direction,
+                "index_difference": index_diff,
+                "wrapped": wrapped,
+                ATTR_LAST_INDEX: old_index,
+                "last_entity_id": old_entity_id,
+                "timer": self._timer_interval if mode == "timer" else None,
+                "mode": mode,
+                "command": command,
+            },
+        )
+
+        self.async_write_ha_state()
+
+    async def async_next(self, call: ServiceCall | None = None) -> None:
+        """Cycle to next state."""
+        if not self._states:
+            return
+
+        if self._current_index == -1:
+            new_index = 0
+        else:
+            new_index = (self._current_index + 1) % len(self._states)
+
+        await self._cycle_to_index(new_index, "next", "direct", SERVICE_NEXT)
+
+    async def async_prev(self, call: ServiceCall | None = None) -> None:
+        """Cycle to previous state."""
+        if not self._states:
+            return
+
+        if self._current_index == -1:
+            new_index = len(self._states) - 1
+        else:
+            new_index = (self._current_index - 1) % len(self._states)
+
+        await self._cycle_to_index(new_index, "prev", "direct", SERVICE_PREV)
+
+    async def async_to(self, call: ServiceCall) -> None:
+        """Cycle to specific index."""
+        index = call.data[ATTR_INDEX]
+
+        if not 0 <= index < len(self._states):
+            _LOGGER.error("Index %d out of bounds for %s", index, self.entity_id)
+            return
+
+        direction = "next" if index > self._current_index else "prev"
+        await self._cycle_to_index(index, direction, "direct", SERVICE_TO)
+
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        """Turn off all states."""
+        old_index = self._current_index
+        old_entity_id = self._get_current_entity_id()
+
+        if old_index != -1 and 0 <= old_index < len(self._states):
+            await self._turn_off_entity(self._states[old_index])
+
+        self._last_index = old_index
+        self._current_index = -1
+
+        # Fire event
+        self.hass.bus.async_fire(
+            EVENT_CYCLED,
+            {
+                ATTR_ENTITY_ID: "Off",
+                ATTR_INDEX: -1,
+                "direction": "next" if self._include_off_state else "prev",
+                "index_difference": -1,
+                "wrapped": False,
+                ATTR_LAST_INDEX: old_index,
+                "last_entity_id": old_entity_id,
+                "timer": None,
+                "mode": "toggle",
+                "command": SERVICE_OFF,
+            },
+        )
+
+        self.async_write_ha_state()
+
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        """Turn on last state or reapply current state."""
+        if self._current_index != -1:
+            # Reapply current state
+            await self._turn_on_entity(self._states[self._current_index])
+        elif self._last_index is not None and 0 <= self._last_index < len(self._states):
+            # Restore last state
+            await self._cycle_to_index(self._last_index, "next", "toggle", SERVICE_ON)
+        elif self._states:
+            # Turn on first state
+            await self._cycle_to_index(0, "next", "toggle", SERVICE_ON)
+
+    async def async_switch(self, call: ServiceCall | None = None) -> None:
+        """Toggle between on and off."""
+        if self._current_index == -1:
+            await self.async_turn_on()
+        else:
+            await self.async_turn_off()
+
+    async def async_cycle(self, call: ServiceCall | None = None) -> None:
+        """Cycle action with timer logic."""
+        if self._current_index == -1:
+            # Turn on first state
+            if self._states:
+                await self._cycle_to_index(0, "next", "cycle", SERVICE_CYCLE)
+            self._cycle_mode_active = True
 
