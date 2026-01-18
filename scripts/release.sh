@@ -32,7 +32,7 @@ COMMIT_MSG_LINT="🔧 lint: {reason}"
 # -------------------------------------------------
 . "${SCRIPT_DIR}/tmpl.sh"
 
-echo -e "${GREEN}🚀 Plugin Template - Release Script${NC}"
+echo -e "${GREEN}🚀 State Cycler - Release Script${NC}"
 echo ""
 
 # Load project settings
