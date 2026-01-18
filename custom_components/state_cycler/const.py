@@ -1,4 +1,5 @@
 """Constants for the State Cycler integration."""
+
 from typing import Final
 
 DOMAIN: Final = "state_cycler"
