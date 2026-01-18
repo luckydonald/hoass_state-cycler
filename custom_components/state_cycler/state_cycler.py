@@ -9,9 +9,7 @@ from typing import Any
 from homeassistant.const import (
     ATTR_ENTITY_ID,
     SERVICE_TURN_OFF,
-    SERVICE_TURN_ON,
     STATE_OFF,
-    STATE_ON,
     STATE_UNAVAILABLE,
     STATE_UNKNOWN,
 )
@@ -38,7 +36,6 @@ from .const import (
     CONF_TIMER_INTERVAL,
     DEFAULT_INCLUDE_OFF_STATE,
     DEFAULT_NAME,
-    DOMAIN,
     EVENT_CYCLE_TIMEOUT,
     EVENT_CYCLED,
     EVENT_INITIALIZED,
