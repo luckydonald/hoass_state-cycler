@@ -40,13 +40,13 @@ if ! command -v python3 &> /dev/null; then
     echo -e "${RED}Error: python3 not found${NC}"
     exit 1
 fi
-
-settings_output=$(python3 scripts/get_project_settings.py 2>/dev/null)
-if [ $? -ne 0 ]; then
+settings_status=0
+settings_output=$(python3 scripts/get_project_settings.py) || settings_status=$?
+if [ ${settings_status} -ne 0 ]; then
     echo -e "${RED}Error: Failed to load project settings. Run 'make init' first.${NC}"
     exit 1
 fi
-eval "$settings_output"
+eval "${settings_output}"
 # running get_project_settings.py should define:
 # DISPLAY_NAME=settings['display_name']
 # DASH_NAME=settings['dash_name']
