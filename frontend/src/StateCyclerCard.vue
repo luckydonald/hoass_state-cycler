@@ -1,13 +1,146 @@
+            v-for="(entityId, index) in configStates"
+            :key="index"
+            class="entity-item"
+          >
+            <span class="entity-name">{{ getEntityFriendlyName(entityId) }}</span>
+            <span class="entity-id">{{ entityId }}</span>
+            <div class="entity-actions">
+              <ha-icon-button
+                @click="moveEntityUp(index)"
+                :disabled="index === 0"
+              >
+                <ha-icon icon="mdi:arrow-up" />
+              </ha-icon-button>
+              <ha-icon-button
+                @click="moveEntityDown(index)"
+                :disabled="index === configStates.length - 1"
+              >
+                <ha-icon icon="mdi:arrow-down" />
+              </ha-icon-button>
+              <ha-icon-button @click="removeEntity(index)">
+                <ha-icon icon="mdi:delete" />
+              </ha-icon-button>
+            </div>
+          </div>
+        </div>
 <script setup lang="ts">
-import {
+        <div class="add-entity">
+          <input
+            v-model="newEntityId"
+            type="text"
+            placeholder="Entity ID (e.g., light.living_room)"
+            class="entity-input"
+            @keyup.enter="addEntity"
+          />
+          <ha-button @click="addEntity">Add</ha-button>
+        </div>
+      </div>
+
   computed,
-  onMounted,
-  onUnmounted,
-  ref,
+        <h3>Options</h3>
+        <div class="option">
+          <label>
+            <input
+              v-model="configIncludeOffState"
+              type="checkbox"
+            />
+            Include off state in cycle
+          </label>
+        </div>
+        <div class="option">
+          <label>
+            Timer interval (seconds):
+            <input
+              v-model.number="configTimerInterval"
+              type="number"
+              min="0.1"
+              step="0.1"
+              placeholder="Optional"
+              class="timer-input"
+            />
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div v-else class="card-content">
+      <!-- Current state display -->
+      <div class="section current-state">
+        <div class="state-info">
+          <div class="state-label">Current State:</div>
+          <div class="state-value">{{ currentStateFriendly }}</div>
+          <div class="state-index" v-if="currentIndex >= 0">
+            Index: {{ currentIndex }} / {{ states.length - 1 }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Control buttons -->
+      <div class="section controls">
+        <ha-button
+          @click="handleToggle"
+          :class="{ 'on': toggleState }"
+          class="control-button toggle-button"
+        >
+          <ha-icon :icon="toggleState ? 'mdi:power' : 'mdi:power-off'" />
+          {{ toggleState ? 'On' : 'Off' }}
+        </ha-button>
+
+        <ha-button
+          @click="handleNext"
+          class="control-button"
+          :disabled="!toggleState && states.length === 0"
+        >
+          <ha-icon icon="mdi:skip-next" />
+          Next
+        </ha-button>
+
+        <ha-button
+          @click="handleCycle"
+          class="control-button"
+        >
+          <ha-icon icon="mdi:sync" />
+          Cycle
+        </ha-button>
+      </div>
+
+      <!-- States list -->
+      <div v-if="states.length > 0" class="section states-list">
+        <h3>States</h3>
+        <div
+          v-for="(entityId, index) in states"
+          :key="index"
+          :class="{ 'active': index === currentIndex }"
+          class="state-item"
+          @click="handleToIndex(index)"
+        >
+          <div class="state-item-content">
+            <ha-icon
+              :icon="index === currentIndex ? 'mdi:checkbox-marked-circle' : 'mdi:checkbox-blank-circle-outline'"
+              :class="{ 'active': index === currentIndex }"
+            />
+            <span class="state-name">{{ getEntityFriendlyName(entityId) }}</span>
+            <span class="state-id">{{ entityId }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settings info -->
+      <div class="section settings-info">
+        <div class="info-item">
+          <ha-icon icon="mdi:power-cycle" />
+          <span>Include off state: {{ includeOffState ? 'Yes' : 'No' }}</span>
+        </div>
+        <div v-if="timerInterval" class="info-item">
+          <ha-icon icon="mdi:timer" />
+          <span>Timer: {{ timerInterval }}s</span>
+        </div>
+  watch,
 } from 'vue';
 import type {
   CardConfig,
   HomeAssistant,
+  HassEntity,
 } from './types';
 
 // Props
@@ -16,65 +149,403 @@ const props = defineProps<{
   config: CardConfig;
 }>();
 
+// Emit for config changes
+const emit = defineEmits<{
+  'config-changed': [config: CardConfig];
+}>();
+
 // State
-const currentTime = ref(new Date());
-let timeInterval: ReturnType<typeof setInterval> | null = null;
+const editMode = ref(false);
+const configStates = ref<string[]>([]);
+const configIncludeOffState = ref(false);
+const configTimerInterval = ref<number | null>(null);
+.edit-button {
+  color: var(--primary-color);
+}
+
+const configName = ref('State Cycler');
+const newEntityId = ref('');
 
 // Lifecycle
 onMounted(() => {
-  timeInterval = setInterval(() => {
-    currentTime.value = new Date();
-  }, 1000);
+  loadConfigFromEntity();
 });
 
-onUnmounted(() => {
-  if (timeInterval) {
-    clearInterval(timeInterval);
-  }
+// Watch for entity changes
+watch(() => props.config.entity, () => {
+  loadConfigFromEntity();
 });
 
-// Computed
-const cardTitle = computed(() => props.config.title || 'State Cycler');
+// Load configuration from the entity
+function loadConfigFromEntity() {
+  if (!props.config.entity || !props.hass) return;
+
+  const entity = getEntityState(props.config.entity);
+  if (entity && entity.attributes) {
+.warning {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--error-color);
+  color: white;
+  border-radius: 8px;
+}
+
+.warning ha-icon {
+  --mdc-icon-size: 24px;
+}
+
+/* Current state display */
+.current-state {
+  background: var(--card-background-color);
+  border: 2px solid var(--divider-color);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.state-info {
+  text-align: center;
+}
+
+.state-label {
+  font-size: 14px;
+  color: var(--secondary-text-color);
+  margin-bottom: 8px;
+}
+
+.state-value {
+  font-size: 24px;
+  font-weight: 500;
+    configName.value = entity.attributes.friendly_name || 'State Cycler';
+  margin-bottom: 4px;
+}
+
+.state-index {
+  font-size: 12px;
+  color: var(--secondary-text-color);
+}
+
+/* Control buttons */
+.controls {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.control-button {
+  flex: 1;
+  min-width: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.toggle-button.on {
+  background: var(--primary-color);
+  color: white;
+const entityState = computed(() => {
+  if (!props.config.entity || !props.hass) return null;
+/* States list */
+.states-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.state-item {
+  padding: 12px;
+  margin-bottom: 8px;
+  background: var(--card-background-color);
+  border: 1px solid var(--divider-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.state-item:hover {
+
+  border-color: var(--primary-color);
+}
+
+.state-item.active {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.state-item-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.state-name {
+  font-weight: 500;
+  flex: 1;
+}
+
+.state-id {
+  font-size: 12px;
+  color: var(--secondary-text-color);
+}
+
+.state-item.active .state-id {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+ha-icon.active {
+  color: white;
+}
+
+/* Settings info */
+.settings-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--secondary-text-color);
+}
+
+/* Edit mode styles */
+.edit-mode .entity-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.entity-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  margin-bottom: 8px;
+  background: var(--card-background-color);
+  border: 1px solid var(--divider-color);
+const currentState = computed(() => {
+}
+
+.entity-name {
+  font-weight: 500;
+  flex: 1;
+}
+
+.entity-id {
+  font-size: 12px;
+});
+  margin-right: auto;
+}
+
+.entity-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.add-entity {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.entity-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--divider-color);
+  border-radius: 4px;
+  background: var(--card-background-color);
+  color: var(--primary-text-color);
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.entity-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.option {
+  margin-bottom: 12px;
+}
+
+.option label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--primary-text-color);
+}
+
+.option input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+}
+
+.timer-input {
+  margin-left: 8px;
+  padding: 4px 8px;
+  border: 1px solid var(--divider-color);
+  border-radius: 4px;
+  background: var(--card-background-color);
+  color: var(--primary-text-color);
+  width: 100px;
+const currentStateFriendly = computed(() => {
+  return entityState.value?.attributes?.state_friendly || 'Off';
+.timer-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  return entityState.value?.attributes?.index ?? -1;
+});
+
+const toggleState = computed(() => {
+  return entityState.value?.attributes?.toggle_state || false;
+});
+
+const states = computed(() => {
+  return entityState.value?.attributes?.states || [];
+});
+
+const includeOffState = computed(() => {
+  return entityState.value?.attributes?.include_off_state || false;
+});
+
+const timerInterval = computed(() => {
+  return entityState.value?.attributes?.timer_interval || null;
+});
 
 // Helper to get entity state
-const getEntityState = (entityId: string) => {
+const getEntityState = (entityId: string): HassEntity | null => {
   if (!props.hass || !props.hass.states) return null;
-  return props.hass.states[entityId];
+  return props.hass.states[entityId] || null;
+};
+
+// Get friendly name for an entity
+const getEntityFriendlyName = (entityId: string): string => {
+  const entity = getEntityState(entityId);
+  return entity?.attributes?.friendly_name || entityId;
 };
 
 // Helper to call service
-async function callService(domain: string, service: string, data: any = {}) {
-  if (!props.hass) return;
-  await props.hass.callService(domain, service, data);
+async function callService(service: string, data: any = {}) {
+  if (!props.hass || !props.config.entity) return;
+
+  await props.hass.callService('state_cycler', service, {
+    entity_id: props.config.entity,
+    ...data,
+  });
 }
 
-// Format time for display
-const formatTime = (date: Date): string => {
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-};
+// Service actions
+async function handleToggle() {
+  await callService('switch');
+}
+
+async function handleNext() {
+  await callService('next');
+}
+
+async function handlePrev() {
+  await callService('prev');
+}
+
+async function handleCycle() {
+  await callService('cycle');
+}
+
+async function handleToIndex(index: number) {
+  await callService('to', { index });
+}
+
+// Config editing
+function toggleEditMode() {
+  if (editMode.value) {
+    // Save changes
+    saveConfig();
+  } else {
+    // Load current config
+    loadConfigFromEntity();
+  }
+  editMode.value = !editMode.value;
+}
+
+function addEntity() {
+  if (newEntityId.value && !configStates.value.includes(newEntityId.value)) {
+    configStates.value.push(newEntityId.value);
+    newEntityId.value = '';
+  }
+}
+
+function removeEntity(index: number) {
+  configStates.value.splice(index, 1);
+}
+
+function moveEntityUp(index: number) {
+  if (index > 0) {
+    const temp = configStates.value[index];
+    configStates.value[index] = configStates.value[index - 1];
+    configStates.value[index - 1] = temp;
+  }
+}
+
+function moveEntityDown(index: number) {
+  if (index < configStates.value.length - 1) {
+    const temp = configStates.value[index];
+    configStates.value[index] = configStates.value[index + 1];
+    configStates.value[index + 1] = temp;
+  }
+}
+
+async function saveConfig() {
+  if (!props.hass || !props.config.entity) return;
+
+  // Update the entity configuration via the config flow
+  // Note: This would typically require calling the config flow update
+  // For now, we'll just update via a service call or direct state update
+  // In a real implementation, you'd need to call the appropriate HA API
+
+  console.log('Saving config:', {
+    states: configStates.value,
+    include_off_state: configIncludeOffState.value,
+    timer_interval: configTimerInterval.value,
+  });
+
+  // TODO: Implement actual config save via Home Assistant API
+}
 </script>
 
 <template>
   <ha-card>
     <div class="card-header">
       <div class="name">{{ cardTitle }}</div>
+      <ha-icon-button
+        v-if="config.entity"
+        @click="toggleEditMode"
+        class="edit-button"
+      >
+        <ha-icon :icon="editMode ? 'mdi:check' : 'mdi:pencil'" />
+      </ha-icon-button>
     </div>
-    <div class="card-content">
-      <!-- Example section: Display current time -->
-      <div class="section">
-        <h3>Current Time</h3>
-        <p class="time-display">{{ formatTime(currentTime) }}</p>
-      </div>
 
-      <!-- Example section: Display entity if configured -->
-      <div v-if="config.entity" class="section">
-        <h3>Entity State</h3>
-        <div v-if="getEntityState(config.entity)" class="entity-info">
-          <p><strong>Entity:</strong> {{ config.entity }}</p>
-          <p><strong>State:</strong> {{ getEntityState(config.entity)?.state }}</p>
-        </div>
-        <p v-else class="warning">Entity not found</p>
+    <div v-if="!config.entity" class="card-content">
+      <div class="warning">
+        <ha-icon icon="mdi:alert" />
+        <p>No entity configured. Please configure this card.</p>
       </div>
+    </div>
+
+    <div v-else-if="editMode" class="card-content edit-mode">
+      <!-- Configuration editor -->
+      <div class="section">
+        <h3>Entities</h3>
+        <div class="entity-list">
+          <div
 
       <!-- Placeholder for your custom content -->
       <div class="section">
