@@ -35,3 +35,21 @@ export interface CardConfig {
   title?: string;
   // Add your custom config options here
 }
+
+// State Cycler specific types
+export interface StateCyclerAttributes extends Record<string, unknown> {
+  friendly_name?: string;
+  state: string; // 'off' or entity_id
+  state_friendly: string;
+  index: number; // -1 if off
+  toggle_state: boolean;
+  include_off_state: boolean;
+  last_state?: string;
+  last_index?: number;
+  timer_interval?: number | null;
+  states: string[]; // list of entity_ids
+}
+
+export interface StateCyclerEntity extends HassEntity {
+  attributes: StateCyclerAttributes;
+}
