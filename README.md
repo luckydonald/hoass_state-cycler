@@ -186,12 +186,11 @@ automation:
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
 <!-- footer -->
 # Repository Information
+## License
+This project is licensed under the `MIT License` - see the [LICENSE](LICENSE) file for details.
+
 ## Tags
 - <kbd>state-cycler</kbd>
 - <kbd>home-assistant</kbd>
