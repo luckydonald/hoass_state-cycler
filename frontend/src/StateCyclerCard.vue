@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import {
-.no-entity {
   ref,
+  computed,
 } from 'vue';
 import type {
   CardConfig,
+  HomeAssistant,
   StateCyclerEntity,
 } from './types';
 
