@@ -1,13 +1,11 @@
 <script setup lang="ts">
 import {
-  computed,
-  onMounted,
-  onUnmounted,
+.no-entity {
   ref,
 } from 'vue';
 import type {
   CardConfig,
-  HomeAssistant,
+  StateCyclerEntity,
 } from './types';
 
 // Props
@@ -16,42 +14,49 @@ const props = defineProps<{
   config: CardConfig;
 }>();
 
-// State
-const currentTime = ref(new Date());
-let timeInterval: ReturnType<typeof setInterval> | null = null;
-
-// Lifecycle
-onMounted(() => {
-  timeInterval = setInterval(() => {
-    currentTime.value = new Date();
-  }, 1000);
-});
-
-onUnmounted(() => {
-  if (timeInterval) {
-    clearInterval(timeInterval);
-  }
-});
-
 // Computed
 const cardTitle = computed(() => props.config.title || 'State Cycler');
 
-// Helper to get entity state
-const getEntityState = (entityId: string) => {
-  if (!props.hass || !props.hass.states) return null;
-  return props.hass.states[entityId];
-};
+const entity = computed((): StateCyclerEntity | null => {
+  if (!props.hass || !props.config.entity) return null;
+  const ent = props.hass.states[props.config.entity];
+  if (!ent || !ent.entity_id.startsWith('state_cycler.')) return null;
+  return ent as StateCyclerEntity;
+});
+
+const isOff = computed(() => entity.value?.attributes.toggle_state === false);
+
+const currentStateFriendly = computed(() => entity.value?.attributes.state_friendly || 'Unknown');
+
+const currentIndex = computed(() => entity.value?.attributes.index ?? -1);
+
+const includeOffState = computed(() => entity.value?.attributes.include_off_state ?? false);
+
+const states = computed(() => entity.value?.attributes.states || []);
 
 // Helper to call service
-async function callService(domain: string, service: string, data: any = {}) {
-  if (!props.hass) return;
-  await props.hass.callService(domain, service, data);
+async function callService(service: string, data: any = {}) {
+  if (!props.hass || !props.config.entity) return;
+  await props.hass.callService('state_cycler', service, {
+    ...data,
+    entity_id: props.config.entity,
+  }, {
+    entity_id: props.config.entity,
+  });
 }
 
-// Format time for display
-const formatTime = (date: Date): string => {
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-};
+// Actions
+async function toggle() {
+  await callService('switch');
+}
+
+async function next() {
+  await callService('next');
+}
+
+async function cycle() {
+  await callService('cycle');
+}
 </script>
 
 <template>
@@ -60,27 +65,44 @@ const formatTime = (date: Date): string => {
       <div class="name">{{ cardTitle }}</div>
     </div>
     <div class="card-content">
-      <!-- Example section: Display current time -->
-      <div class="section">
-        <h3>Current Time</h3>
-        <p class="time-display">{{ formatTime(currentTime) }}</p>
-      </div>
-
-      <!-- Example section: Display entity if configured -->
-      <div v-if="config.entity" class="section">
-        <h3>Entity State</h3>
-        <div v-if="getEntityState(config.entity)" class="entity-info">
-          <p><strong>Entity:</strong> {{ config.entity }}</p>
-          <p><strong>State:</strong> {{ getEntityState(config.entity)?.state }}</p>
+      <div v-if="entity" class="state-info">
+        <div class="current-state">
+          <span class="label">Current:</span>
+          <span class="value">{{ currentStateFriendly }}</span>
+          <span class="index">(Index: {{ currentIndex }})</span>
         </div>
-        <p v-else class="warning">Entity not found</p>
+        <div class="toggle-state">
+          <span class="label">Status:</span>
+          <span class="value">{{ isOff ? 'Off' : 'On' }}</span>
+        </div>
+        <div class="include-off">
+          <span class="label">Include Off:</span>
+          <span class="value">{{ includeOffState ? 'Yes' : 'No' }}</span>
+        </div>
+      </div>
+      <div v-else class="no-entity">
+        <p>No State Cycler entity configured or found.</p>
       </div>
 
-      <!-- Placeholder for your custom content -->
-      <div class="section">
-        <p class="placeholder">
-          This is a template card. Replace this content with your own implementation.
-        </p>
+      <div v-if="entity" class="buttons">
+        <ha-button @click="toggle" :disabled="!entity">
+          {{ isOff ? 'Turn On' : 'Turn Off' }}
+        </ha-button>
+        <ha-button @click="next" :disabled="!entity">
+          Next
+        </ha-button>
+        <ha-button @click="cycle" :disabled="!entity">
+          Cycle
+        </ha-button>
+      </div>
+
+      <div v-if="states.length > 0" class="states-list">
+        <h4>States:</h4>
+        <ul>
+          <li v-for="(state, idx) in states" :key="state" :class="{ active: idx === currentIndex }">
+            {{ state }}
+          </li>
+        </ul>
       </div>
     </div>
   </ha-card>
@@ -109,40 +131,60 @@ ha-card {
   padding-top: 16px;
 }
 
-.section {
-  margin-bottom: 24px;
+.state-info {
+  margin-bottom: 16px;
 }
 
-.section:last-child {
-  margin-bottom: 0;
+.state-info > div {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
 }
 
-.section h3 {
-  margin: 0 0 12px 0;
+.label {
+  font-weight: 500;
+  color: var(--primary-text-color);
+}
+
+.value {
+  color: var(--secondary-text-color);
+}
+
+.index {
+  font-size: 0.9em;
+  color: var(--disabled-text-color);
+}
+
+.buttons {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.states-list h4 {
+  margin: 0 0 8px 0;
   font-size: 16px;
   font-weight: 500;
   color: var(--primary-text-color);
 }
 
-.time-display {
-  font-size: 32px;
-  font-weight: 300;
-  color: var(--primary-text-color);
+.states-list ul {
+  list-style: none;
+  padding: 0;
   margin: 0;
 }
 
-.entity-info p {
-  margin: 4px 0;
+.states-list li {
+  padding: 4px 8px;
+  margin-bottom: 4px;
+  background: var(--secondary-background-color);
+  border-radius: 4px;
   color: var(--primary-text-color);
 }
 
-.placeholder {
-  padding: 20px;
-  background: var(--secondary-background-color);
-  border-radius: 8px;
-  text-align: center;
-  color: var(--secondary-text-color);
-  font-style: italic;
+.states-list li.active {
+  background: var(--accent-color);
+  color: var(--text-accent-color);
 }
 
 .warning {
