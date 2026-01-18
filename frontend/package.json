@@ -1,0 +1,40 @@
+{
+  "name": "state-cycler-card",
+  "version": "0.0.0-dev0",
+  "description": "Lovelace card for State Cycler for Home Assistant",
+  "main": "dist/state-cycler-card.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/luckydonald/hoass_state-cycler.git"
+  },
+  "author": "luckydonald",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview",
+    "type-check": "vue-tsc -b",
+    "format": "dprint fmt",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage"
+  },
+  "dependencies": {
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@vue/test-utils": "^2.4.6",
+    "@tsconfig/node22": "^22.0.0",
+    "@vitest/coverage-v8": "^2.1.8",
+    "@vitest/ui": "^2.1.8",
+    "@types/node": "^22.10.0",
+    "jsdom": "^25.0.1",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "@vue/tsconfig": "^0.7.0",
+    "vitest": "^2.1.8",
+    "dprint": "^0.49.0",
+    "typescript": "~5.6.3",
+    "vite": "^6.0.7",
+    "vue-tsc": "^2.2.0"
+  }
+}
