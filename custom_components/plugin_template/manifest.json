@@ -1,13 +1,13 @@
 {
-  "domain": "state_cycler",
-  "name": "State Cycler",
+  "domain": "plugin_template",
+  "name": "Plugin Template",
   "codeowners": ["@luckydonald", "@luckylucy"],
   "config_flow": true,
   "dependencies": ["lovelace"],
-  "documentation": "https://github.com/luckydonald/hoass_state-cycler",
+  "documentation": "https://github.com/luckydonald/hoass_plugin-template",
   "integration_type": "service",
   "iot_class": "local_polling",
-  "issue_tracker": "https://github.com/luckydonald/hoass_state-cycler/issues",
+  "issue_tracker": "https://github.com/luckydonald/hoass_plugin-template/issues",
   "requirements": [],
   "version": "0.0.0-dev0"
 }

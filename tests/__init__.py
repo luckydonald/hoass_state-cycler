@@ -1,2 +1,2 @@
-"""Tests for State Cycler integration."""
+"""Tests for Plugin Template integration."""
 

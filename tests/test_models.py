@@ -1,5 +1,5 @@
-"""Tests for State Cycler data models."""
-from custom_components.state_cycler.models import PluginData
+"""Tests for Plugin Template data models."""
+from custom_components.plugin_template.models import PluginData
 
 
 def test_plugin_data_creation():

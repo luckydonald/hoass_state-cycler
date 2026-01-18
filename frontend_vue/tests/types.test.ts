@@ -47,7 +47,7 @@ describe('Type Definitions', () => {
       expect(config).toBeDefined();
 
       const configWithProps: CardConfig = {
-        type: 'custom:state-cycler-card',
+        type: 'custom:plugin-template-card',
         entity: 'sensor.test',
         title: 'Test',
       };

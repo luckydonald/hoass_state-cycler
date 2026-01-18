@@ -6,8 +6,8 @@ describe('Example utility tests', () => {
   });
 
   it('should test string operations', () => {
-    const result = 'state_cycler'.replace(/_/g, '-');
-    expect(result).toBe('state-cycler');
+    const result = 'plugin_template'.replace(/_/g, '-');
+    expect(result).toBe('plugin-template');
   });
 
   it('should test date formatting', () => {

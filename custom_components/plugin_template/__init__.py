@@ -1,4 +1,4 @@
-"""State Cycler integration for Home Assistant."""
+"""Plugin Template integration for Home Assistant."""
 from __future__ import annotations
 
 import logging
@@ -17,7 +17,7 @@ PLATFORMS: list[Platform] = [Platform.SENSOR]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up State Cycler from a config entry."""
+    """Set up Plugin Template from a config entry."""
     hass.data.setdefault(DOMAIN, {})
 
     # Store any data you need for your integration

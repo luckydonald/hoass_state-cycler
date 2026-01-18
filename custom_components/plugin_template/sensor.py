@@ -1,4 +1,4 @@
-"""Sensor platform for State Cycler."""
+"""Sensor platform for Plugin Template."""
 
 from __future__ import annotations
 
@@ -21,23 +21,23 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up State Cycler sensors."""
+    """Set up Plugin Template sensors."""
     # Example: Create a basic sensor
     sensors = [
-        StateCyclerSensor(entry, "example"),
+        PluginTemplateSensor(entry, "example"),
     ]
 
     async_add_entities(sensors)
 
 
-class StateCyclerSensor(SensorEntity):
-    """Representation of a State Cycler Sensor."""
+class PluginTemplateSensor(SensorEntity):
+    """Representation of a Plugin Template Sensor."""
 
     def __init__(self, entry: ConfigEntry, sensor_type: str) -> None:
         """Initialize the sensor."""
         self._entry = entry
         self._sensor_type = sensor_type
-        self._attr_name = f"State Cycler {sensor_type.title()}"
+        self._attr_name = f"Plugin Template {sensor_type.title()}"
         self._attr_unique_id = f"{entry.entry_id}_{sensor_type}"
         self._attr_native_value = None
 
@@ -46,9 +46,9 @@ class StateCyclerSensor(SensorEntity):
         """Return device info."""
         return DeviceInfo(
             identifiers={(DOMAIN, self._entry.entry_id)},
-            name="State Cycler",
+            name="Plugin Template",
             manufacturer="Custom",
-            model="State Cycler",
+            model="Plugin Template",
         )
 
     async def async_update(self) -> None:
