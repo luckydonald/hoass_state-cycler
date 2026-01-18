@@ -2,6 +2,7 @@
 - [x] Update types.ts with StateCycler entity interfaces
 - [x] Create comprehensive tests for the frontend card
 - [x] Update README.md with complete documentation, features, installation, configuration, usage examples, and API details
+- [x] Fix hassfest validation errors (quoted YAML boolean keys in services.yaml, added missing _get_saved_state method)
 - [ ] Test in actual Home Assistant instance
 - [ ] Test with various entity types (lights, switches, scenes)
 - [ ] Test state restoration after HA restart

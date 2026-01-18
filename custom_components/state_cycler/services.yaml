@@ -29,14 +29,14 @@ to:
           min: 0
           mode: box
 
-off:
+"off":
   name: Turn Off
   description: Turn off all states.
   target:
     entity:
       domain: state_cycler
 
-on:
+"on":
   name: Turn On
   description: Turn on the last selected state, or reapply the current state if already on.
   target:
@@ -56,4 +56,3 @@ cycle:
   target:
     entity:
       domain: state_cycler
-
