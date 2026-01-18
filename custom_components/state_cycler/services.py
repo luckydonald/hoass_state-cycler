@@ -1,4 +1,4 @@
-"""Services for Plugin Template."""
+"""Services for State Cycler."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ _LOGGER = logging.getLogger(LOG_NAME)
 
 
 async def async_setup_services(hass: HomeAssistant) -> None:
-    """Set up services for Plugin Template."""
+    """Set up services for State Cycler."""
 
     async def handle_example_service(call: ServiceCall) -> None:
         """Handle the example service call."""
@@ -41,7 +41,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
 
 
 async def async_unload_services(hass: HomeAssistant) -> None:
-    """Unload services for Plugin Template."""
+    """Unload services for State Cycler."""
     # Unregister your services here
     # hass.services.async_remove(DOMAIN, SERVICE_EXAMPLE)
 
