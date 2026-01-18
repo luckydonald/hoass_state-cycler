@@ -1,7 +1,7 @@
 # State Cycler for Home Assistant
 
 > A Home Assistant integration that allows cycling through a list of entities (lights, switches, scenes) with manual and automatic controls, including a custom Lovelace card for easy interaction.
-> <kbd>state-cycler</kbd>, <kbd>homeassistant-integration</kbd>, <kbd>home-assistant-integration</kbd>, <kbd>hacs-integration</kbd>, <kbd>home-assistant</kbd>, <kbd>hacs</kbd>, <kbd>custom-card</kbd>, <kbd>lovelace-card</kbd>, <kbd>luckydonald</kbd>
+
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
 [![GitHub Release](https://img.shields.io/github/release/luckydonald/hoass_state-cycler.svg)](https://github.com/luckydonald/hoass_state-cycler/releases)
@@ -189,3 +189,21 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+<!-- footer -->
+# Repository Information
+## Tags
+- <kbd>state-cycler</kbd>
+- <kbd>home-assistant</kbd>
+- <kbd>hacs</kbd>
+- <kbd>hacs-integration</kbd>
+- <kbd>homeassistant-integration</kbd>
+- <kbd>home-assistant-integration</kbd>
+- <kbd>homeassistant-custom-integration</kbd>
+- <kbd>custom-card</kbd>
+- <kbd>homeassistant-custom-card</kbd>
+- <kbd>lovelace-card</kbd>
+- <kbd>custom-component</kbd>
+- <kbd>homeassistant-custom-component</kbd>
+- <kbd>home-assistant-custom-component-hacs</kbd>
+- <kbd>luckydonald</kbd>
