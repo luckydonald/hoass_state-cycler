@@ -1,3 +1,6 @@
+- [x] Implement Vue frontend card with state display and action buttons
+- [x] Update types.ts with StateCycler entity interfaces
+- [x] Create comprehensive tests for the frontend card
 - [ ] Test in actual Home Assistant instance
 - [ ] Test with various entity types (lights, switches, scenes)
 - [ ] Test state restoration after HA restart
@@ -186,4 +189,3 @@ ai/
 - [ ] Create example Lovelace configurations
 
 ### Integration Testing
-
