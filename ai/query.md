@@ -72,3 +72,4 @@ Generate me a Homeassistant plugin based on the following description.
 ———
 
 Create the vue frontend in the frontend/ folder.
+Update the `README.md`.
