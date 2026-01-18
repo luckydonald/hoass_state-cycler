@@ -220,19 +220,22 @@ const currentStateFriendly = computed(() => {
   return entityState.value?.attributes?.state_friendly || 'Off';
 });
 const currentIndex = computed(() => {
-  return entityState.value?.attributes?.index ?? -1;
+  const idx = entityState.value?.attributes?.index;
+  return typeof idx === 'number' ? idx : -1;
+});
+const states = computed(() => {
+  const s = entityState.value?.attributes?.states;
+  return Array.isArray(s) ? s as string[] : [];
 });
 const toggleState = computed(() => {
   return entityState.value?.attributes?.toggle_state || false;
-});
-const states = computed(() => {
-  return entityState.value?.attributes?.states || [];
 });
 const includeOffState = computed(() => {
   return entityState.value?.attributes?.include_off_state || false;
 });
 const timerInterval = computed(() => {
-  return entityState.value?.attributes?.timer_interval || null;
+  const t = entityState.value?.attributes?.timer_interval;
+  return typeof t === 'number' ? t : null;
 });
 
 // Helper to get entity state
