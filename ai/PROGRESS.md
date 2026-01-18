@@ -3,6 +3,7 @@
 - [x] Create comprehensive tests for the frontend card
 - [x] Update README.md with complete documentation, features, installation, configuration, usage examples, and API details
 - [x] Fix hassfest validation errors (quoted YAML boolean keys in services.yaml, added missing _get_saved_state method)
+- [x] Ensure integration shows up in Home Assistant with proper configuration UI (config flow with entity list, include_off_state, timer_interval options)
 - [ ] Test in actual Home Assistant instance
 - [ ] Test with various entity types (lights, switches, scenes)
 - [ ] Test state restoration after HA restart
