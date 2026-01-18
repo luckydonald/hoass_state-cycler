@@ -274,6 +274,10 @@ class StateCyclerEntity(RestoreEntity, Entity):
                     blocking=True,
                 )
 
+    def _get_saved_state(self, entity_id: str) -> dict[str, Any] | None:
+        """Get the saved state for an entity."""
+        return self._entity_states.get(entity_id)
+
     async def _turn_off_entity(self, entity_id: str) -> None:
         """Turn off an entity."""
         await self._save_entity_state(entity_id)
