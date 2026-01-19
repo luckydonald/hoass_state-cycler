@@ -93,12 +93,15 @@ ifeq ($(BACKEND),1)
 	fi
 
 	@echo "Running Python tests (excluding Playwright-marked tests)..."
+	# Ensure the deprecation warning about asyncio_default_fixture_loop_scope is
+	# suppressed early (it can be emitted before pytest reads pyproject.toml).
+	export PYTEST_ADDOPTS="$${PYTEST_ADDOPTS:-} -W ignore::pytest.PytestDeprecationWarning"; \
 	@$(PYTEST) $(PYTEST_OPT) $(PYTEST_ARGS) -m "not playwright"
 
 	@if [ "$(RUN_PLAYWRIGHT)" = "1" ]; then \
 		echo "Running Playwright-marked tests..."; \
 		export RUN_PLAYWRIGHT=1; \
-		$(PYTEST) $(PYTEST_OPT) $(PYTEST_ARGS) -m "playwright"; \
+		@RUN_PLAYWRIGHT=1 PYTEST_ADDOPTS="$${PYTEST_ADDOPTS:-} -W ignore::pytest.PytestDeprecationWarning" $(PYTEST) $(PYTEST_OPT) $(PYTEST_ARGS) -m "playwright"; \
 	fi
 else
 	@echo "No Python sources detected – skipping backend tests."
