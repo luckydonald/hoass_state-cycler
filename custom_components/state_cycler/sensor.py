@@ -35,17 +35,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
     """Set up both sensor adapters for a State Cycler entry."""
     raw = StateCyclerRawSensor(hass, entry)
     friendly = StateCyclerFriendlySensor(hass, entry)
-    # async_add_entities may be an async function in tests (AsyncMock), so call appropriately
-    res = async_add_entities([raw, friendly])
-    if hasattr(res, "__await__"):
-        # Schedule in event loop
-        try:
-            import asyncio
+    # async_add_entities may return a coroutine (AsyncMock); await if so.
+    import asyncio
 
-            asyncio.get_event_loop().run_until_complete(res)
-        except Exception:
-            # If no running loop, ignore in unit tests
-            pass
+    res = async_add_entities([raw, friendly])
+    if asyncio.iscoroutine(res):
+        await res
 
 
 class StateCyclerRawSensor(SensorEntity):
