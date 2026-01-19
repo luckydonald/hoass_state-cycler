@@ -58,6 +58,15 @@ class StateCyclerNextButton(ButtonEntity):
             return
         await core.async_handle_adapter_action("next")
 
+    async def async_added_to_hass(self) -> None:
+        await super().async_added_to_hass()
+        # Register adapter so core can call back; provide both new and legacy names
+        core = self.hass.data.get(DOMAIN, {}).get(self._entry.entry_id, {}).get("core")
+        if core:
+            core.register_adapter("button_next", self)
+            # Legacy alias used by some tests
+            core.register_adapter("button", self)
+
 
 class StateCyclerPrevButton(ButtonEntity):
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
@@ -93,8 +102,7 @@ class StateCyclerPrevButton(ButtonEntity):
 
     async def async_added_to_hass(self) -> None:
         await super().async_added_to_hass()
-        # Register adapter so core can call back; dispatcher not used by button adapters
+        # Register adapter so core can call back
         core = self.hass.data.get(DOMAIN, {}).get(self._entry.entry_id, {}).get("core")
         if core:
-            core.register_adapter("button_next", self)
             core.register_adapter("button_prev", self)
