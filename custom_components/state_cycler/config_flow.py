@@ -32,7 +32,9 @@ class StateCyclerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Handle the initial step."""
-        _LOGGER.warning(f"Setting up State Cycler config_flow:step_user… {user_input=!r}")
+        _LOGGER.warning(
+            f"Setting up State Cycler config_flow:step_user… {user_input=!r}"
+        )
         if user_input is not None:
             # Parse states from multiline text
             states = []
@@ -86,13 +88,17 @@ class StateCyclerOptionsFlow(config_entries.OptionsFlow):
 
     def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
         """Initialize options flow."""
-        _LOGGER.warning(f"Setting up State Cycler config_flow:__init__… {config_entry=!r}")
+        _LOGGER.warning(
+            f"Setting up State Cycler config_flow:__init__… {config_entry=!r}"
+        )
         self.config_entry = config_entry
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
-        _LOGGER.warning(f"Setting up State Cycler config_flow:__init__… {self.config_entry=!r}, {user_input=!r}")
+        _LOGGER.warning(
+            f"Setting up State Cycler config_flow:__init__… {self.config_entry=!r}, {user_input=!r}"
+        )
 
         """Manage the options."""
         if user_input is not None:
