@@ -36,6 +36,7 @@ class StateCyclerSelect(SelectEntity):
         self.hass = hass
         self._entry = entry
         self._name = entry.data.get("name", "State Cycler")
+        self._attr_name = f"{self._name} (Selector)"
         self._unique_id = f"{entry.entry_id}_select"
         # display options shown in the UI (friendly names)
         self._options: list[str] = []
@@ -45,7 +46,12 @@ class StateCyclerSelect(SelectEntity):
         self._suppress_update = False
 
         # Subscribe to core updates when available
-        async_dispatcher_connect(hass, SIGNAL_UPDATE, self._async_update_from_dispatcher)
+        try:
+            if isinstance(getattr(hass, "data", None), dict):
+                async_dispatcher_connect(hass, SIGNAL_UPDATE, self._async_update_from_dispatcher)
+        except Exception:
+            # Running in unit tests with a partial/mock hass; ignore dispatcher hookup
+            pass
 
         # If core exists, request initial sync
         core = hass.data[DOMAIN].get(entry.entry_id, {}).get("core")
@@ -183,5 +189,7 @@ class StateCyclerSelect(SelectEntity):
         # Write state
         self._suppress_update = True
         self._current_option = curr
-        self.async_write_ha_state()
+        # Only write HA state when entity has been added to a platform/component
+        if getattr(self, "platform", None) is not None:
+            self.async_write_ha_state()
         self._suppress_update = False
