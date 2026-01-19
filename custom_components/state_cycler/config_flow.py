@@ -56,7 +56,7 @@ class StateCyclerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     ),
                     CONF_TIMER_INTERVAL: user_input.get(CONF_TIMER_INTERVAL),
                 },
-            )
+            )  # type: ignore
 
         return self.async_show_form(
             step_id="user",
@@ -73,7 +73,7 @@ class StateCyclerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 }
             ),
             last_step=True,
-        )
+        )  # type: ignore
 
     @staticmethod
     @callback
@@ -147,4 +147,4 @@ class StateCyclerOptionsFlow(config_entries.OptionsFlow):
                     ): vol.All(vol.Coerce(float), vol.Range(min=0.1)),
                 }
             ),
-        )
+        )  # type: ignore
