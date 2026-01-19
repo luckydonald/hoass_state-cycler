@@ -21,6 +21,7 @@ from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.helpers.typing import ConfigType
 from homeassistant.helpers.dispatcher import async_dispatcher_send
+from homeassistant.exceptions import ServiceNotFound
 import voluptuous as vol
 
 from .const import (
@@ -385,29 +386,42 @@ class StateCyclerEntity(RestoreEntity, Entity):
         saved_state = self._get_saved_state(entity_id)
         domain = entity_id.split(".")[0]
         if saved_state:
-            if saved_state["state"] == "on":
-                await self.hass.services.async_call(
+            try:
+                if saved_state["state"] == "on":
+                    await self.hass.services.async_call(
+                        domain,
+                        "turn_on",
+                        {"entity_id": entity_id},
+                        blocking=True,
+                    )
+                elif domain == "scene":
+                    await self.hass.services.async_call(
+                        domain,
+                        "turn_on",
+                        {"entity_id": entity_id},
+                        blocking=True,
+                    )
+                else:
+                    await self.hass.services.async_call(
+                        domain,
+                        "turn_on",
+                        {
+                            "entity_id": entity_id,
+                            # Add attribute restoration logic here if needed
+                        },
+                        blocking=True,
+                    )
+            except ServiceNotFound:
+                _LOGGER.warning(
+                    "Service %s.turn_on not found while restoring state for %s",
                     domain,
-                    "turn_on",
-                    {"entity_id": entity_id},
-                    blocking=True,
+                    entity_id,
                 )
-            elif domain == "scene":
-                await self.hass.services.async_call(
-                    domain,
-                    "turn_on",
-                    {"entity_id": entity_id},
-                    blocking=True,
-                )
-            else:
-                await self.hass.services.async_call(
-                    domain,
-                    "turn_on",
-                    {
-                        "entity_id": entity_id,
-                        # Add attribute restoration logic here if needed
-                    },
-                    blocking=True,
+            except Exception:
+                _LOGGER.debug(
+                    "Ignored error while restoring state for %s: %s",
+                    entity_id,
+                    exc_info=True,
                 )
 
     def _get_saved_state(self, entity_id: str) -> dict[str, Any] | None:
@@ -420,16 +434,36 @@ class StateCyclerEntity(RestoreEntity, Entity):
         domain = entity_id.split(".")[0]
 
         if domain != "scene":  # Scenes can't be turned off
-            await self.hass.services.async_call(
-                domain,
-                SERVICE_TURN_OFF,
-                {ATTR_ENTITY_ID: entity_id},
-                blocking=True,
-            )
+            try:
+                await self.hass.services.async_call(
+                    domain,
+                    SERVICE_TURN_OFF,
+                    {ATTR_ENTITY_ID: entity_id},
+                    blocking=True,
+                )
+            except ServiceNotFound:
+                _LOGGER.warning(
+                    "Service %s.%s not found while turning off %s",
+                    domain,
+                    SERVICE_TURN_OFF,
+                    entity_id,
+                )
+            except Exception:
+                _LOGGER.debug(
+                    "Ignored error while turning off %s: %s",
+                    entity_id,
+                    exc_info=True,
+                )
 
     async def _turn_on_entity(self, entity_id: str) -> None:
         """Turn on an entity, restoring state if available."""
-        await self._restore_entity_state(entity_id)
+        try:
+            await self._restore_entity_state(entity_id)
+        except ServiceNotFound:
+            # _restore_entity_state already logs, but be defensive here.
+            _LOGGER.warning("Service not found while turning on %s", entity_id)
+        except Exception:
+            _LOGGER.debug("Ignored error while turning on %s", entity_id, exc_info=True)
 
     async def _cycle_to_index(
         self,
