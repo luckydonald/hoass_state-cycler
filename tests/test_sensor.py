@@ -14,7 +14,9 @@ from custom_components.state_cycler.const import DOMAIN
 @pytest.fixture
 def hass():
     """Create a mock Home Assistant instance."""
-    return Mock(spec=HomeAssistant)
+    h = Mock(spec=HomeAssistant)
+    h.data = {"custom_components": {}}
+    return h
 
 
 @pytest.fixture

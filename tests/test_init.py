@@ -10,7 +10,9 @@ from custom_components.state_cycler.const import DOMAIN
 @pytest.fixture
 def hass():
     """Create a mock Home Assistant instance."""
-    return Mock(spec=HomeAssistant)
+    h = Mock(spec=HomeAssistant)
+    h.data = {"custom_components": {}}
+    return h
 
 
 @pytest.fixture
@@ -61,4 +63,3 @@ async def test_async_unload_entry_failure(hass, config_entry):
 
     assert result is False
     assert config_entry.entry_id in hass.data[DOMAIN]
-
