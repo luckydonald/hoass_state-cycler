@@ -31,6 +31,7 @@ class StateCyclerNextButton(ButtonEntity):
         self.hass = hass
         self._entry = entry
         self._name = entry.data.get("name", "State Cycler")
+        self._attr_name = f"{self._name} (Next)"
         self._unique_id = f"{entry.entry_id}_button_next"
 
     @property
@@ -51,7 +52,7 @@ class StateCyclerNextButton(ButtonEntity):
         )
 
     async def async_press(self, **kwargs: Any) -> None:
-        core = self.hass.data.get(DOMAIN, {}).get(self._entry.entry_id, {}).get("core")
+        core = self.hass.data[DOMAIN].get(self._entry.entry_id, {}).get("core")
         if not core:
             _LOGGER.warning("State Cycler core not ready for next button")
             return
@@ -63,6 +64,7 @@ class StateCyclerPrevButton(ButtonEntity):
         self.hass = hass
         self._entry = entry
         self._name = entry.data.get("name", "State Cycler")
+        self._attr_name = f"{self._name} (Prev)"
         self._unique_id = f"{entry.entry_id}_button_prev"
 
     @property
@@ -83,7 +85,7 @@ class StateCyclerPrevButton(ButtonEntity):
         )
 
     async def async_press(self, **kwargs: Any) -> None:
-        core = self.hass.data.get(DOMAIN, {}).get(self._entry.entry_id, {}).get("core")
+        core = self.hass.data[DOMAIN].get(self._entry.entry_id, {}).get("core")
         if not core:
             _LOGGER.warning("State Cycler core not ready for prev button")
             return
