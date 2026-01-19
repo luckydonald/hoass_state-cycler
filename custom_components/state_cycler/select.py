@@ -45,22 +45,28 @@ class StateCyclerSelect(SelectEntity):
         self._current_option: str | None = None
         self._suppress_update = False
 
-        # Subscribe to core updates when available
-        try:
-            if isinstance(getattr(hass, "data", None), dict):
-                async_dispatcher_connect(hass, SIGNAL_UPDATE, self._async_update_from_dispatcher)
-        except Exception:
-            # Running in unit tests with a partial/mock hass; ignore dispatcher hookup
-            pass
-
-        # If core exists, request initial sync
-        core = hass.data[DOMAIN].get(entry.entry_id, {}).get("core")
+        # If core exists, register adapter (no HA writes here)
+        core = hass.data.get(DOMAIN, {}).get(entry.entry_id, {}).get("core")
         if core:
             core.register_adapter("select", self)
-            self._async_update_from_core(core.get_state_snapshot())
-
-        # Mark adapter initialized to allow later writes
+        # Mark adapter initialized; HA writes will happen in async_added_to_hass
         self._initialized = True
+
+    async def async_added_to_hass(self) -> None:
+        """When entity is added to hass, connect dispatcher and sync state."""
+        await super().async_added_to_hass()
+        try:
+            async_dispatcher_connect(self.hass, SIGNAL_UPDATE, self._async_update_from_dispatcher)
+        except Exception:
+            pass
+
+        core = self.hass.data.get(DOMAIN, {}).get(self._entry.entry_id, {}).get("core")
+        if core:
+            core.register_adapter("select", self)
+            snap = core.get_state_snapshot()
+            self._async_update_from_core(snap)
+            # Now write initial HA state
+            self.async_write_ha_state()
 
     @property
     def name(self) -> str:
@@ -189,9 +195,7 @@ class StateCyclerSelect(SelectEntity):
         else:
             curr = self._options[(idx + offset)]
 
-        # Write state (only after initialization)
+        # Update internal state; HA write happens in async_added_to_hass or when platform present
         self._suppress_update = True
         self._current_option = curr
-        if getattr(self, "platform", None) is not None and getattr(self, "_initialized", False):
-            self.async_write_ha_state()
         self._suppress_update = False
