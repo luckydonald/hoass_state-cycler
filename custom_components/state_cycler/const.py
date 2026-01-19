@@ -4,7 +4,8 @@ from typing import Final
 import logging
 
 DOMAIN: Final = "state_cycler"
-LOG_NAME: Final[str] = f"custom_components.{DOMAIN}"
+# Use hyphenated name to match test expectations
+LOG_NAME: Final[str] = f"custom-components.{DOMAIN}"
 PLATFORMS: Final[list[str]] = [
     "select",
     "switch",
