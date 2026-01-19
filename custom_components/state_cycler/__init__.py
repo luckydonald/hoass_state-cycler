@@ -8,14 +8,12 @@ from typing import Any
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers.dispatcher import async_dispatcher_send
 
-from .const import DOMAIN, LOG_NAME
+from .const import DOMAIN, LOG_NAME, PLATFORMS, SIGNAL_UPDATE
 
 _LOGGER = logging.getLogger(LOG_NAME)
 _LOGGER.warning(f"Loaded State Cycler's `{__name__}` module.")
-
-# State Cycler uses the sensor platform
-PLATFORMS = ["sensor"]
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
@@ -32,9 +30,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up State Cycler from a config entry."""
     _LOGGER.warning(f"Setting up State Cycler entry (__init__.py)… {entry=!r}")
     hass.data.setdefault(DOMAIN, {})
-    hass.data[DOMAIN][entry.entry_id] = entry.data
+    hass.data[DOMAIN].setdefault(entry.entry_id, {})
 
-    # Forward the setup to the state_cycler platform
+    # Store a placeholder for core object; adapters will register themselves under hass.data[DOMAIN][entry.entry_id]
+    hass.data[DOMAIN][entry.entry_id]["core"] = None
+
+    # Forward setup to adapter platforms (select/switch/button/sensor)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     entry.async_on_unload(entry.add_update_listener(async_update_options))
@@ -46,6 +47,9 @@ async def async_update_options(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Update options."""
     _LOGGER.warning(f"Update State Cycler entry options (__init__.py)… {entry=!r}")
 
+    # Notify adapters that config changed
+    async_dispatcher_send(hass, SIGNAL_UPDATE, entry.entry_id)
+
     await hass.config_entries.async_reload(entry.entry_id)
 
 
@@ -55,7 +59,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
-    if unload_ok:
+    if unload_ok and entry.entry_id in hass.data[DOMAIN]:
         hass.data[DOMAIN].pop(entry.entry_id)
 
     return unload_ok

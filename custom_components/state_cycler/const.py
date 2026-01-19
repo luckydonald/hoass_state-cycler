@@ -6,8 +6,14 @@ import logging
 DOMAIN: Final = "state_cycler"
 LOG_NAME: Final[str] = f"custom_components.{DOMAIN}"
 PLATFORMS: Final[list[str]] = [
+    "select",
+    "switch",
+    "button",
     "sensor",
 ]
+
+# Dispatcher signals
+SIGNAL_UPDATE: Final = f"{DOMAIN}_update"
 
 _LOGGER = logging.getLogger(LOG_NAME)
 _LOGGER.warning(f"Loaded State Cycler's `{__name__}` module.")

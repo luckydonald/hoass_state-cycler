@@ -20,6 +20,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.helpers.typing import ConfigType
+from homeassistant.helpers.dispatcher import async_dispatcher_send
 import voluptuous as vol
 
 from .const import (
@@ -48,6 +49,7 @@ from .const import (
     SERVICE_SWITCH,
     SERVICE_TO,
     LOG_NAME,
+    SIGNAL_UPDATE,
 )
 
 _LOGGER = logging.getLogger(LOG_NAME)
@@ -160,6 +162,57 @@ class StateCyclerEntity(RestoreEntity, Entity):
         self._timer_cancel: Any | None = None
         self._cycle_mode_active: bool = False
         self._cycle_timer_cancel: Any | None = None
+
+        # Adapter registration and locking
+        self._adapters: dict[str, Any] = {}
+        self._action_lock: asyncio.Lock = asyncio.Lock()
+
+        # Ensure core is accessible to adapters via hass.data
+        hass.data.setdefault("state_cycler", {})
+        hass.data["state_cycler"].setdefault(config_entry.entry_id, {})
+        hass.data["state_cycler"][config_entry.entry_id]["core"] = self
+
+    def register_adapter(self, name: str, adapter: Any) -> None:
+        """Register an adapter object for updates (optional)."""
+        self._adapters[name] = adapter
+
+    def get_state_snapshot(self) -> dict[str, Any]:
+        """Return a serializable snapshot of the core state for adapters."""
+        return {
+            ATTR_STATES: list(self._states),
+            ATTR_INDEX: self._current_index,
+            ATTR_INCLUDE_OFF_STATE: self._include_off_state,
+            ATTR_TIMER_INTERVAL: self._timer_interval,
+        }
+
+    async def async_handle_adapter_action(self, action: str, *, index: int | None = None) -> None:
+        """Handle adapter-originated actions (adapter asks core to change state)."""
+        async with self._action_lock:
+            if action == "next":
+                await self.async_next()
+            elif action == "prev":
+                await self.async_prev()
+            elif action == "to" and index is not None:
+                # internal index handling
+                await self._async_to_index(index)
+            elif action == "off":
+                await self.async_turn_off()
+            elif action == "on":
+                await self.async_turn_on()
+            elif action == "switch":
+                await self.async_switch()
+            elif action == "cycle":
+                await self.async_cycle()
+            else:
+                _LOGGER.error("Unknown adapter action requested: %s", action)
+
+    async def _async_to_index(self, index: int) -> None:
+        """Internal helper to cycle to a specific index without a ServiceCall object."""
+        if not 0 <= index < len(self._states):
+            _LOGGER.error("Index %d out of bounds for %s", index, self.entity_id)
+            return
+
+        await self._cycle_to_index(index, "next", "direct", "to")
 
     async def async_added_to_hass(self) -> None:
         """Run when entity about to be added to hass."""
@@ -360,6 +413,8 @@ class StateCyclerEntity(RestoreEntity, Entity):
         )
 
         self.async_write_ha_state()
+        # Notify adapters of the change
+        async_dispatcher_send(self.hass, SIGNAL_UPDATE, self._config_entry.entry_id)
 
     async def async_next(self, call: ServiceCall | None = None) -> None:
         """Cycle to next state."""
@@ -425,6 +480,8 @@ class StateCyclerEntity(RestoreEntity, Entity):
         )
 
         self.async_write_ha_state()
+        # Notify adapters
+        async_dispatcher_send(self.hass, SIGNAL_UPDATE, self._config_entry.entry_id)
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn on last state or reapply current state."""
@@ -437,6 +494,9 @@ class StateCyclerEntity(RestoreEntity, Entity):
         elif self._states:
             # Turn on first state
             await self._cycle_to_index(0, "next", "toggle", SERVICE_ON)
+
+        # Notify adapters
+        async_dispatcher_send(self.hass, SIGNAL_UPDATE, self._config_entry.entry_id)
 
     async def async_switch(self, call: ServiceCall | None = None) -> None:
         """Toggle between on and off."""
@@ -485,6 +545,8 @@ class StateCyclerEntity(RestoreEntity, Entity):
                 ATTR_INDEX: self._current_index,
             },
         )
+        # Notify adapters
+        async_dispatcher_send(self.hass, SIGNAL_UPDATE, self._config_entry.entry_id)
 
     def _start_timer(self) -> None:
         """Start the automatic cycling timer."""
