@@ -8,7 +8,7 @@
   "integration_type": "entity",
   "iot_class": "calculated",
   "issue_tracker": "https://github.com/luckydonald/hoass_state-cycler/issues",
-  "platforms": ["state_cycler"],
+  "platforms": ["sensor"],
   "requirements": [],
   "version": "0.0.0-pre5"
 }
