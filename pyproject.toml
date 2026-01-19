@@ -39,6 +39,9 @@ addopts = [
     "--cov-report=term-missing",
     "--cov-report=html",
 ]
+filterwarnings = [
+    "ignore:The configuration option \"asyncio_default_fixture_loop_scope\" is unset.:pytest.PytestDeprecationWarning",
+]
 markers = [
     "playwright: mark tests that require Playwright/browser testing",
 ]
