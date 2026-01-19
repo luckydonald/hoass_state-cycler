@@ -74,19 +74,17 @@ def test_playwright_sees_state():
     friendly = "Kitchen Lights"
     _write_snapshot_page(tmp, entity_id, friendly)
 
-    # Start a simple static file server serving that directory
-    server = _start_file_server(tmp, 8765)
+    # Load the generated file via file:// to avoid network/socket usage which
+    # is blocked in the test environment. Playwright supports file URLs.
+    p = tmp / "index.html"
 
-    try:
-        with sync_playwright() as pw:
-            browser = pw.chromium.launch(headless=True)
-            page = browser.new_page()
-            page.goto("http://127.0.0.1:8765/index.html")
-            # Basic assertions that the page shows expected content
-            content = page.text_content("#friendly")
-            assert friendly in content
-            eid = page.text_content("#entity")
-            assert entity_id in eid
-            browser.close()
-    finally:
-        server.shutdown()
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch(headless=True)
+        page = browser.new_page()
+        page.goto(f"file://{p.resolve()}")
+        # Basic assertions that the page shows expected content
+        content = page.text_content("#friendly")
+        assert friendly in content
+        eid = page.text_content("#entity")
+        assert entity_id in eid
+        browser.close()
