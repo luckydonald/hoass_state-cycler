@@ -17,7 +17,7 @@ dev = [
     "pytest>=8.3.0",
     "pytest-asyncio>=0.24.0",
     "pytest-cov>=6.0.0",
-    "pytest-homeassistant-custom-component @ git+https://github.com/MatthewFlamm/pytest-homeassistant-custom-component.git@main",
+    "pytest-homeassistant-custom-component>=0.13.307",
     "pytest-playwright>=0.7.0",
     "playwright>=1.57.0",
 ]
