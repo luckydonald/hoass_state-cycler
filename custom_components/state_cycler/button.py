@@ -15,11 +15,15 @@ from .const import DOMAIN, LOG_NAME
 _LOGGER = logging.getLogger(LOG_NAME)
 
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities) -> None:
-    async_add_entities([
-        StateCyclerNextButton(hass, entry),
-        StateCyclerPrevButton(hass, entry),
-    ])
+async def async_setup_entry(
+    hass: HomeAssistant, entry: ConfigEntry, async_add_entities
+) -> None:
+    async_add_entities(
+        [
+            StateCyclerNextButton(hass, entry),
+            StateCyclerPrevButton(hass, entry),
+        ]
+    )
 
 
 class StateCyclerNextButton(ButtonEntity):

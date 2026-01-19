@@ -14,12 +14,21 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 
-from .const import DOMAIN, LOG_NAME, SIGNAL_UPDATE, ATTR_STATES, ATTR_INDEX, ATTR_INCLUDE_OFF_STATE
+from .const import (
+    DOMAIN,
+    LOG_NAME,
+    SIGNAL_UPDATE,
+    ATTR_STATES,
+    ATTR_INDEX,
+    ATTR_INCLUDE_OFF_STATE,
+)
 
 _LOGGER = logging.getLogger(LOG_NAME)
 
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities) -> None:
+async def async_setup_entry(
+    hass: HomeAssistant, entry: ConfigEntry, async_add_entities
+) -> None:
     """Set up select adapter for a State Cycler config entry."""
     # Create and add the adapter entity
     adapter = StateCyclerSelect(hass, entry)
@@ -39,7 +48,9 @@ class StateCyclerSelect(SelectEntity):
         self._suppress_update = False
 
         # Subscribe to core updates when available
-        async_dispatcher_connect(hass, SIGNAL_UPDATE, self._async_update_from_dispatcher)
+        async_dispatcher_connect(
+            hass, SIGNAL_UPDATE, self._async_update_from_dispatcher
+        )
 
         # If core exists, request initial sync
         core = hass.data[DOMAIN].get(entry.entry_id, {}).get("core")

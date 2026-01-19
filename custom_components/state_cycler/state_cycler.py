@@ -190,12 +190,15 @@ class StateCyclerEntity(RestoreEntity, Entity):
             ATTR_LAST_INDEX: self._last_index,
             ATTR_LAST_STATE: (
                 self._states[self._last_index]
-                if self._last_index is not None and 0 <= self._last_index < len(self._states)
+                if self._last_index is not None
+                and 0 <= self._last_index < len(self._states)
                 else ("off" if self._last_index == -1 else None)
             ),
         }
 
-    async def async_handle_adapter_action(self, action: str, *, index: int | None = None) -> None:
+    async def async_handle_adapter_action(
+        self, action: str, *, index: int | None = None
+    ) -> None:
         """Handle adapter-originated actions (adapter asks core to change state)."""
         async with self._action_lock:
             if action == "next":

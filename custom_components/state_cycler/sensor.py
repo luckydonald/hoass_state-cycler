@@ -18,13 +18,22 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity import DeviceInfo
 
-from .const import DOMAIN, LOG_NAME, SIGNAL_UPDATE, ATTR_STATE, ATTR_STATE_FRIENDLY, ATTR_INDEX
+from .const import (
+    DOMAIN,
+    LOG_NAME,
+    SIGNAL_UPDATE,
+    ATTR_STATE,
+    ATTR_STATE_FRIENDLY,
+    ATTR_INDEX,
+)
 
 _LOGGER = logging.getLogger(LOG_NAME)
 _LOGGER.warning(f"Loaded State Cycler's `{__name__}` module.")
 
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities) -> None:
+async def async_setup_entry(
+    hass: HomeAssistant, entry: ConfigEntry, async_add_entities
+) -> None:
     """Set up both sensor adapters for a State Cycler entry."""
     raw = StateCyclerRawSensor(hass, entry)
     friendly = StateCyclerFriendlySensor(hass, entry)
@@ -41,7 +50,9 @@ class StateCyclerRawSensor(SensorEntity):
         self._unique_id = f"{entry.entry_id}_raw"
         self._state: str = "off"
 
-        async_dispatcher_connect(hass, SIGNAL_UPDATE, self._async_update_from_dispatcher)
+        async_dispatcher_connect(
+            hass, SIGNAL_UPDATE, self._async_update_from_dispatcher
+        )
 
         core = hass.data.get(DOMAIN, {}).get(entry.entry_id, {}).get("core")
         if core:
@@ -76,7 +87,12 @@ class StateCyclerRawSensor(SensorEntity):
         idx = None
         if core:
             idx = core.get_state_snapshot().get(ATTR_INDEX)
-        return {"index": idx, "friendly": core.get_state_snapshot().get(ATTR_STATE_FRIENDLY) if core else None}
+        return {
+            "index": idx,
+            "friendly": core.get_state_snapshot().get(ATTR_STATE_FRIENDLY)
+            if core
+            else None,
+        }
 
     async def async_update(self) -> None:
         core = self.hass.data.get(DOMAIN, {}).get(self._entry.entry_id, {}).get("core")
@@ -110,7 +126,9 @@ class StateCyclerFriendlySensor(SensorEntity):
         self._unique_id = f"{entry.entry_id}_friendly"
         self._state: str = "Off"
 
-        async_dispatcher_connect(hass, SIGNAL_UPDATE, self._async_update_from_dispatcher)
+        async_dispatcher_connect(
+            hass, SIGNAL_UPDATE, self._async_update_from_dispatcher
+        )
 
         core = hass.data.get(DOMAIN, {}).get(entry.entry_id, {}).get("core")
         if core:

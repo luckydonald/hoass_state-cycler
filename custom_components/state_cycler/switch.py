@@ -16,7 +16,9 @@ from .const import DOMAIN, LOG_NAME, SIGNAL_UPDATE, ATTR_INDEX
 _LOGGER = logging.getLogger(LOG_NAME)
 
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities) -> None:
+async def async_setup_entry(
+    hass: HomeAssistant, entry: ConfigEntry, async_add_entities
+) -> None:
     """Set up the switch adapter for a State Cycler config entry."""
     adapter = StateCyclerSwitch(hass, entry)
     async_add_entities([adapter])
@@ -33,7 +35,9 @@ class StateCyclerSwitch(SwitchEntity):
         self._is_on = False
 
         # Listen for config updates / core notifications
-        async_dispatcher_connect(hass, SIGNAL_UPDATE, self._async_update_from_dispatcher)
+        async_dispatcher_connect(
+            hass, SIGNAL_UPDATE, self._async_update_from_dispatcher
+        )
 
         # If core exists, register adapter and sync
         core = hass.data.get(DOMAIN, {}).get(entry.entry_id, {}).get("core")
