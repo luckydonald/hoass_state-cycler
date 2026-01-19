@@ -47,6 +47,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.data[DOMAIN]["component"] = EntityComponent(_LOGGER, DOMAIN, hass)
 
     component: EntityComponent = hass.data[DOMAIN]["component"]
+    # Ensure per-entry storage and persist config for tests that call
+    # async_setup_entry directly on the integration root.
+    hass.data[DOMAIN].setdefault(entry.entry_id, {})
+    hass.data[DOMAIN][entry.entry_id]["config"] = entry.data
+
     core_entity = _state_cycler.StateCyclerEntity(hass, entry)
 
     # In full HA runtime we add the entity via the EntityComponent so the
