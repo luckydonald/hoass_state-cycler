@@ -14,8 +14,8 @@ from .const import DOMAIN, LOG_NAME
 _LOGGER = logging.getLogger(LOG_NAME)
 _LOGGER.warning(f"Loaded State Cycler's `{__name__}` module.")
 
-# State Cycler uses a custom platform
-PLATFORMS = ["state_cycler"]
+# State Cycler uses the sensor platform
+PLATFORMS = ["sensor"]
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 

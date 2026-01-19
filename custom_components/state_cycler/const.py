@@ -6,7 +6,7 @@ import logging
 DOMAIN: Final = "state_cycler"
 LOG_NAME: Final[str] = f"custom_components.{DOMAIN}"
 PLATFORMS: Final[list[str]] = [
-    "state_cycler",
+    "sensor",
 ]
 
 _LOGGER = logging.getLogger(LOG_NAME)
