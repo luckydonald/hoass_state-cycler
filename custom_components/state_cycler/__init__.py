@@ -26,8 +26,9 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
     hass.data.setdefault(DOMAIN, {})
 
     # Create and store the EntityComponent for the custom domain so we can add core entities
-    component = EntityComponent(_LOGGER, DOMAIN, hass)
-    hass.data[DOMAIN]["component"] = component
+    if "component" not in hass.data[DOMAIN]:
+        component = EntityComponent(_LOGGER, DOMAIN, hass)
+        hass.data[DOMAIN]["component"] = component
 
     return True
 
@@ -40,6 +41,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # Create the authoritative core entity via the EntityComponent
     from . import state_cycler as _state_cycler
+
+    # Ensure component exists (tests may not have called async_setup)
+    if "component" not in hass.data[DOMAIN]:
+        hass.data[DOMAIN]["component"] = EntityComponent(_LOGGER, DOMAIN, hass)
 
     component: EntityComponent = hass.data[DOMAIN]["component"]
     core_entity = _state_cycler.StateCyclerEntity(hass, entry)
