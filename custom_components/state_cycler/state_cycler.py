@@ -24,6 +24,7 @@ from homeassistant.helpers.dispatcher import async_dispatcher_send
 import voluptuous as vol
 
 from .const import (
+    DOMAIN,
     ATTR_INDEX,
     ATTR_INCLUDE_OFF_STATE,
     ATTR_LAST_INDEX,
@@ -168,9 +169,9 @@ class StateCyclerEntity(RestoreEntity, Entity):
         self._action_lock: asyncio.Lock = asyncio.Lock()
 
         # Ensure core is accessible to adapters via hass.data
-        hass.data.setdefault("state_cycler", {})
-        hass.data["state_cycler"].setdefault(config_entry.entry_id, {})
-        hass.data["state_cycler"][config_entry.entry_id]["core"] = self
+        hass.data.setdefault(DOMAIN, {})
+        hass.data[DOMAIN].setdefault(config_entry.entry_id, {})
+        hass.data[DOMAIN][config_entry.entry_id]["core"] = self
 
     def register_adapter(self, name: str, adapter: Any) -> None:
         """Register an adapter object for updates (optional)."""
@@ -243,6 +244,9 @@ class StateCyclerEntity(RestoreEntity, Entity):
         # Start timer if configured
         if self._timer_interval:
             self._start_timer()
+
+        # Notify adapters that core is ready so they can register and sync
+        async_dispatcher_send(self.hass, SIGNAL_UPDATE, self._config_entry.entry_id)
 
     async def async_will_remove_from_hass(self) -> None:
         """Run when entity will be removed from hass."""
