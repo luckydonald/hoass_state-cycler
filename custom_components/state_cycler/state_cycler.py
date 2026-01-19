@@ -184,6 +184,15 @@ class StateCyclerEntity(RestoreEntity, Entity):
             ATTR_INDEX: self._current_index,
             ATTR_INCLUDE_OFF_STATE: self._include_off_state,
             ATTR_TIMER_INTERVAL: self._timer_interval,
+            # Machine state (entity_id or 'off') and friendly label
+            ATTR_STATE: self._get_current_entity_id(),
+            ATTR_STATE_FRIENDLY: self._get_state_friendly_name(),
+            ATTR_LAST_INDEX: self._last_index,
+            ATTR_LAST_STATE: (
+                self._states[self._last_index]
+                if self._last_index is not None and 0 <= self._last_index < len(self._states)
+                else ("off" if self._last_index == -1 else None)
+            ),
         }
 
     async def async_handle_adapter_action(self, action: str, *, index: int | None = None) -> None:
