@@ -49,6 +49,7 @@ from .const import (
 )
 
 _LOGGER = logging.getLogger(__name__)
+_LOGGER.warning(f"Loaded State Cycler's `{__name__}` module.")
 
 PLATFORM_SCHEMA = vol.Schema(
     {
@@ -67,7 +68,7 @@ async def async_setup_platform(
 ) -> None:
     """Set up the State Cycler platform."""
     # Platform setup is handled via config entries
-    _LOGGER.warning("Setup via config entries only.")
+    _LOGGER.warning("Setup of State Cycler via config entries only.")
     pass
 
 
@@ -76,6 +77,7 @@ async def async_setup_entry(
     config_entry: ConfigType,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
+    _LOGGER.warning(f"Setting up entry for State Cycler… {config_entry=!r}")
     """Set up State Cycler entities from config entry."""
     entity = StateCyclerEntity(hass, config_entry)
     async_add_entities([entity], True)

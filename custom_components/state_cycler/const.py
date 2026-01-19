@@ -1,8 +1,17 @@
 """Constants for the State Cycler integration."""
 
 from typing import Final
+import logging
 
 DOMAIN: Final = "state_cycler"
+LOG_NAME: Final[str] = f"custom_components.{DOMAIN}"
+PLATFORMS: Final[list[str]] = [
+    "state_cycler",
+]
+
+_LOGGER = logging.getLogger(LOG_NAME)
+_LOGGER.warning(f"Loaded State Cycler's `{__name__}` module.")
+
 
 # Events
 EVENT_CYCLED: Final = f"{DOMAIN}.cycled"

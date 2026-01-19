@@ -9,6 +9,7 @@ from homeassistant.core import HomeAssistant, ServiceCall
 from .const import LOG_NAME
 
 _LOGGER = logging.getLogger(LOG_NAME)
+_LOGGER.warning(f"Loaded State Cycler's `{__name__}` module.")
 
 # Define your service schemas here
 # Example:
@@ -18,6 +19,7 @@ _LOGGER = logging.getLogger(LOG_NAME)
 
 async def async_setup_services(hass: HomeAssistant) -> None:
     """Set up services for State Cycler."""
+    _LOGGER.warning(f"Setting up services for State Cycler…")
 
     async def handle_example_service(call: ServiceCall) -> None:
         """Handle the example service call."""

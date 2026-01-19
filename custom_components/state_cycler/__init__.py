@@ -12,6 +12,7 @@ from homeassistant.helpers import config_validation as cv
 from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
+_LOGGER.warning(f"Loaded State Cycler's `{__name__}` module.")
 
 # State Cycler uses a custom platform
 PLATFORMS = ["state_cycler"]
@@ -21,12 +22,15 @@ CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
     """Set up the State Cycler component."""
+    _LOGGER.warning(f"Setting up State Cycler (__init__.py)… {config=!r}")
+
     hass.data.setdefault(DOMAIN, {})
     return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up State Cycler from a config entry."""
+    _LOGGER.warning(f"Setting up State Cycler entry (__init__.py)… {entry=!r}")
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = entry.data
 
@@ -40,11 +44,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_update_options(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Update options."""
+    _LOGGER.warning(f"Update State Cycler entry options (__init__.py)… {entry=!r}")
+
     await hass.config_entries.async_reload(entry.entry_id)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
+    _LOGGER.warning(f"Unload State Cycler entry (__init__.py)… {entry=!r}")
+
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
     if unload_ok:

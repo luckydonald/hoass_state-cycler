@@ -21,6 +21,7 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up State Cycler sensors."""
+    _LOGGER.warning(f"Setting up State Cycler sensor platform… {entry=!r}")
     # Example: Create a basic sensor
     sensors = [
         StateCyclerSensor(entry, "example"),
@@ -34,6 +35,8 @@ class StateCyclerSensor(SensorEntity):
 
     def __init__(self, entry: ConfigEntry, sensor_type: str) -> None:
         """Initialize the sensor."""
+        _LOGGER.warning(f"Setting up State Cycler sensor… {entry=!r}, {sensor_type=!r}")
+
         self._entry = entry
         self._sensor_type = sensor_type
         self._attr_name = f"State Cycler {sensor_type.title()}"
