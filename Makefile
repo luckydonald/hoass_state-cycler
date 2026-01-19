@@ -95,10 +95,11 @@ ifeq ($(BACKEND),1)
 	@echo "Running Python tests (excluding Playwright-marked tests)..."
 	@$(PYTEST) $(PYTEST_OPT) $(PYTEST_ARGS) -m "not playwright"
 
-	ifeq ($(RUN_PLAYWRIGHT),1)
-		@echo "Running Playwright-marked tests..."
-		@RUN_PLAYWRIGHT=1 $(PYTEST) $(PYTEST_OPT) $(PYTEST_ARGS) -m "playwright"
-	endif
+	@if [ "$(RUN_PLAYWRIGHT)" = "1" ]; then \
+		echo "Running Playwright-marked tests..."; \
+		export RUN_PLAYWRIGHT=1; \
+		$(PYTEST) $(PYTEST_OPT) $(PYTEST_ARGS) -m "playwright"; \
+	fi
 else
 	@echo "No Python sources detected – skipping backend tests."
 endif
