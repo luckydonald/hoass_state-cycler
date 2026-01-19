@@ -54,17 +54,7 @@ class StateCyclerRawSensor(SensorEntity):
         self._unique_id = f"{entry.entry_id}_raw"
         self._state: str = "off"
 
-        try:
-            if isinstance(getattr(hass, "data", None), dict):
-                async_dispatcher_connect(hass, SIGNAL_UPDATE, self._async_update_from_dispatcher)
-        except Exception:
-            pass
-
-        core = hass.data.get(DOMAIN, {}).get(entry.entry_id, {}).get("core") if isinstance(getattr(hass, "data", None), dict) else None
-        if core:
-            core.register_adapter("sensor_raw", self)
-            snap = core.get_state_snapshot()
-            self._async_update_from_core(snap)
+        # Initial sync and dispatcher connection happen in async_added_to_hass
 
     @property
     def name(self) -> str:
@@ -122,6 +112,20 @@ class StateCyclerRawSensor(SensorEntity):
         if getattr(self, "platform", None) is not None:
             self.async_write_ha_state()
 
+    async def async_added_to_hass(self) -> None:
+        await super().async_added_to_hass()
+        try:
+            async_dispatcher_connect(self.hass, SIGNAL_UPDATE, self._async_update_from_dispatcher)
+        except Exception:
+            pass
+
+        core = self.hass.data.get(DOMAIN, {}).get(self._entry.entry_id, {}).get("core")
+        if core:
+            core.register_adapter("sensor_raw", self)
+            snap = core.get_state_snapshot()
+            self._async_update_from_core(snap)
+            self.async_write_ha_state()
+
 
 class StateCyclerFriendlySensor(SensorEntity):
     """Sensor that exposes a human-friendly label for the current state."""
@@ -134,17 +138,7 @@ class StateCyclerFriendlySensor(SensorEntity):
         self._unique_id = f"{entry.entry_id}_friendly"
         self._state: str = "Off"
 
-        try:
-            if isinstance(getattr(hass, "data", None), dict):
-                async_dispatcher_connect(hass, SIGNAL_UPDATE, self._async_update_from_dispatcher)
-        except Exception:
-            pass
-
-        core = hass.data.get(DOMAIN, {}).get(entry.entry_id, {}).get("core") if isinstance(getattr(hass, "data", None), dict) else None
-        if core:
-            core.register_adapter("sensor_friendly", self)
-            snap = core.get_state_snapshot()
-            self._async_update_from_core(snap)
+        # Initial sync and dispatcher connection happen in async_added_to_hass
 
     @property
     def name(self) -> str:
@@ -195,4 +189,18 @@ class StateCyclerFriendlySensor(SensorEntity):
         state = snapshot.get(ATTR_STATE_FRIENDLY, "Off")
         self._state = state
         if getattr(self, "platform", None) is not None:
+            self.async_write_ha_state()
+
+    async def async_added_to_hass(self) -> None:
+        await super().async_added_to_hass()
+        try:
+            async_dispatcher_connect(self.hass, SIGNAL_UPDATE, self._async_update_from_dispatcher)
+        except Exception:
+            pass
+
+        core = self.hass.data.get(DOMAIN, {}).get(self._entry.entry_id, {}).get("core")
+        if core:
+            core.register_adapter("sensor_friendly", self)
+            snap = core.get_state_snapshot()
+            self._async_update_from_core(snap)
             self.async_write_ha_state()
