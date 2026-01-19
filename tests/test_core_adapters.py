@@ -14,13 +14,17 @@ from custom_components.state_cycler.button import StateCyclerNextButton, StateCy
 @pytest.fixture
 def hass():
     hass = Mock(spec=HomeAssistant)
-    hass.data = {}
+    # Provide the data mapping expected by pytest-homeassistant-cusom_component plugin
+    hass.data = {"custom_components": {}}
     # minimal bus and services used by core
     hass.bus = Mock()
     hass.services = Mock()
     hass.services.async_call = AsyncMock()
-    # states mapping: dict with get
-    hass.states = {}
+    # states mapping: provide a simple dict-like object with get
+    class StatesDict(dict):
+        def get(self, key, default=None):
+            return super().get(key, default)
+    hass.states = StatesDict()
     # event loop
     hass.loop = asyncio.get_event_loop()
     return hass
