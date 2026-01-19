@@ -86,3 +86,4 @@ For that you don't need any old-entity-migration code, just assume a new install
 - Add unit tests for core↔adapters
   - adapt Makefile to run tests
   - make sure pipeline runs tests
+  - Please install `MatthewFlamm/pytest-homeassistant-custom-component` and with that also add full tests against the `hass` via `playwright`.
