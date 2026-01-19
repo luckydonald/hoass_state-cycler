@@ -124,7 +124,7 @@ class StateCyclerOptionsFlow(config_entries.OptionsFlow):
                     ),
                     CONF_TIMER_INTERVAL: user_input.get(CONF_TIMER_INTERVAL),
                 },
-            )
+            )  # type: ignore
 
         # Format states for display
         current_states = self.config_entry.data.get(CONF_STATES, [])
