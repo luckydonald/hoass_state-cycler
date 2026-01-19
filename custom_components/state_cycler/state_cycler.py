@@ -804,7 +804,16 @@ class StateCyclerEntity(RestoreEntity, Entity):
             try:
                 upd = getattr(adapter, "_async_update_from_core", None)
                 if callable(upd):
-                    upd(snapshot)
+                    # Ensure adapter updates run on HA's event loop thread to avoid
+                    # calling async_write_ha_state from executor threads.
+                    try:
+                        self.hass.loop.call_soon_threadsafe(upd, snapshot)
+                    except Exception:
+                        # Fallback to direct call if scheduling fails
+                        try:
+                            upd(snapshot)
+                        except Exception:
+                            _LOGGER.debug("Adapter update failed for %s", name, exc_info=True)
                 # If adapter looks like a Select adapter but didn't update its
                 # current option, compute and set it as a fallback. This helps
                 # unit tests where adapter implementations may skip writes.
