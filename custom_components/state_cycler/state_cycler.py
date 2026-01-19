@@ -238,6 +238,14 @@ class StateCyclerEntity(RestoreEntity, Entity):
         hass.data[DOMAIN].setdefault(config_entry.entry_id, {})
         hass.data[DOMAIN][config_entry.entry_id]["core"] = self
 
+        # Detect lightweight/test environments where hass is a partial Mock
+        # (no hass.config). In that case we avoid writing HA state until the
+        # entity is actually added to hass via async_added_to_hass.
+        self._lightweight = not (
+            hasattr(hass, "config") and getattr(hass.config, "config_dir", None)
+        )
+        self._platform_added = False
+
     def register_adapter(self, name: str, adapter: Any) -> None:
         """Register an adapter object for updates (optional)."""
         self._adapters[name] = adapter
@@ -324,6 +332,8 @@ class StateCyclerEntity(RestoreEntity, Entity):
 
         # Notify adapters that core is ready so they can register and sync
         async_dispatcher_send(self.hass, SIGNAL_UPDATE, self._config_entry.entry_id)
+        # Mark that the entity has been added to hass/platform so writes are safe
+        self._platform_added = True
 
     async def async_will_remove_from_hass(self) -> None:
         """Run when entity will be removed from hass."""
@@ -681,12 +691,11 @@ class StateCyclerEntity(RestoreEntity, Entity):
         EntityComponent; writing HA state in that situation raises
         NoEntitySpecifiedError. Use this helper to avoid that during unit tests.
         """
-        # Only write HA state if entity has been added to a platform. In unit
-        # tests we may instantiate the core directly without adding it to a
-        # platform, in which case writing state will raise NoEntitySpecifiedError.
-        if getattr(self, "platform", None) is not None:
+        # Only write HA state if entity has been added to hass/platform and is
+        # not running in a lightweight test environment.
+        if not self._lightweight and self._platform_added and getattr(self, "platform", None) is not None:
             try:
                 self.async_write_ha_state()
             except Exception:
-                # Best-effort: ignore write failures in test environments
+                # Best-effort: ignore write failures
                 pass
