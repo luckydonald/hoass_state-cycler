@@ -239,11 +239,11 @@ class StateCyclerEntity(RestoreEntity, Entity):
         hass.data[DOMAIN][config_entry.entry_id]["core"] = self
 
         # Detect lightweight/test environments where hass is a partial Mock
-        # (no hass.config). In that case we avoid writing HA state until the
-        # entity is actually added to hass via async_added_to_hass.
-        self._lightweight = not (
-            hasattr(hass, "config") and getattr(hass.config, "config_dir", None)
-        )
+        # (no hass.config or config_dir not a real path). In that case we
+        # avoid writing HA state until the entity is actually added to hass via
+        # async_added_to_hass.
+        cfg_dir = getattr(getattr(hass, "config", None), "config_dir", None)
+        self._lightweight = not (isinstance(cfg_dir, str) and cfg_dir)
         self._platform_added = False
 
     def register_adapter(self, name: str, adapter: Any) -> None:
