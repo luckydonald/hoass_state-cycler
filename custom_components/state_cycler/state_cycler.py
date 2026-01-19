@@ -292,6 +292,16 @@ class StateCyclerEntity(RestoreEntity, Entity):
 
         return attrs
 
+    @property
+    def device_info(self) -> dict[str, Any]:
+        """Return device information for the device registry."""
+        return {
+            "identifiers": {(DOMAIN, self._config_entry.entry_id)},
+            "name": self._attr_name,
+            "manufacturer": "Custom",
+            "model": "State Cycler",
+        }
+
     def _get_current_entity_id(self) -> str:
         """Get current entity ID or 'off'."""
         if self._current_index == -1:
