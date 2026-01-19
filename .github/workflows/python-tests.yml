@@ -27,20 +27,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      - name: Upgrade pip
-        run: python -m pip install --upgrade pip
-
-      - name: Install test dependencies (including pytest-homeassistant-custom-component from GitHub)
+      - name: Install uv & sync dev dependencies
         run: |
           python -m pip install --upgrade pip
-          # Install test helpers pinned by pyproject.dev group if available
-          python -m pip install ruff mypy pytest pytest-asyncio pytest-cov
-          # Install pytest-playwright and Playwright browsers
-          python -m pip install pytest-playwright playwright
-          # Install pytest-homeassistant-custom-component from MatthewFlamm's repo for latest HA fixtures
-          python -m pip install "git+https://github.com/MatthewFlamm/pytest-homeassistant-custom-component.git@main"
-          # Install a Home Assistant core wheel for tests (may be large; adjust as needed)
-          python -m pip install homeassistant
+          python -m pip install uv
+          # Use uv to sync dev dependency group declared in pyproject.toml
+          uv sync --dev
 
       - name: Install Playwright browsers
         run: |
