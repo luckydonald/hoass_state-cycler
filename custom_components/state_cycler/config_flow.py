@@ -17,9 +17,10 @@ from .const import (
     DEFAULT_INCLUDE_OFF_STATE,
     DEFAULT_NAME,
     DOMAIN,
+    LOG_NAME,
 )
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(LOG_NAME)
 _LOGGER.warning(f"Loaded State Cycler's `{__name__}` module.")
 
 

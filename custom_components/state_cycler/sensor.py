@@ -13,6 +13,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .const import DOMAIN, LOG_NAME
 
 _LOGGER = logging.getLogger(LOG_NAME)
+_LOGGER.warning(f"Loaded State Cycler's `{__name__}` module.")
 
 
 async def async_setup_entry(

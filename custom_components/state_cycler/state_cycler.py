@@ -46,9 +46,10 @@ from .const import (
     SERVICE_PREV,
     SERVICE_SWITCH,
     SERVICE_TO,
+    LOG_NAME,
 )
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(LOG_NAME)
 _LOGGER.warning(f"Loaded State Cycler's `{__name__}` module.")
 
 PLATFORM_SCHEMA = vol.Schema(
