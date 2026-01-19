@@ -124,7 +124,8 @@ class StateCyclerRawSensor(SensorEntity):
     def _async_update_from_core(self, snapshot: dict[str, Any]) -> None:
         state = snapshot.get(ATTR_STATE, "off")
         self._state = state.lower() if isinstance(state, str) else str(state)
-        self.async_write_ha_state()
+        if getattr(self, "platform", None) is not None:
+            self.async_write_ha_state()
 
 
 class StateCyclerFriendlySensor(SensorEntity):
@@ -198,4 +199,5 @@ class StateCyclerFriendlySensor(SensorEntity):
     def _async_update_from_core(self, snapshot: dict[str, Any]) -> None:
         state = snapshot.get(ATTR_STATE_FRIENDLY, "Off")
         self._state = state
-        self.async_write_ha_state()
+        if getattr(self, "platform", None) is not None:
+            self.async_write_ha_state()
