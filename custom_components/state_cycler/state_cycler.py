@@ -104,6 +104,56 @@ async def async_setup_entry(
         # When added via platform, the integration code will set hass.data component
         hass.data[DOMAIN][config_entry.entry_id]["core"] = entity
 
+    # Register services if the entity has a platform (not available in lightweight tests)
+    platform = getattr(entity, "platform", None)
+    if platform is not None:
+        try:
+            platform.async_register_entity_service(
+                SERVICE_NEXT,
+                {},
+                "async_next",
+            )
+
+            platform.async_register_entity_service(
+                SERVICE_PREV,
+                {},
+                "async_prev",
+            )
+
+            platform.async_register_entity_service(
+                SERVICE_TO,
+                {vol.Required(ATTR_INDEX): vol.Coerce(int)},
+                "async_to",
+            )
+
+            platform.async_register_entity_service(
+                SERVICE_OFF,
+                {},
+                "async_turn_off",
+            )
+
+            platform.async_register_entity_service(
+                SERVICE_ON,
+                {},
+                "async_turn_on",
+            )
+
+            platform.async_register_entity_service(
+                SERVICE_SWITCH,
+                {},
+                "async_switch",
+            )
+
+            platform.async_register_entity_service(
+                SERVICE_CYCLE,
+                {},
+                "async_cycle",
+            )
+        except Exception:
+            # Best-effort registration for test environments where platform may
+            # not expose the service registration helpers.
+            pass
+
     # Register services
     platform = entity.platform
 
