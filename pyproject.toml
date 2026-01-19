@@ -32,6 +32,9 @@ addopts = [
     "--cov-report=term-missing",
     "--cov-report=html",
 ]
+markers = [
+    "playwright: mark tests that require Playwright/browser testing",
+]
 
 [tool.coverage.run]
 source = ["custom_components/state_cycler"]
@@ -50,4 +53,3 @@ exclude_lines = [
     "if TYPE_CHECKING:",
     "@abstractmethod",
 ]
-
