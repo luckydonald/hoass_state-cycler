@@ -1,4 +1,3 @@
-# ...new file...
 """Comprehensive integration tests for State Cycler.
 
 This file adds broader end-to-end tests using the real `hass` fixture from
@@ -18,6 +17,7 @@ from pytest_homeassistant_custom_component.common import (
 
 from homeassistant.const import ATTR_ENTITY_ID
 from homeassistant.core import HomeAssistant
+from homeassistant.util import dt as dt_util
 
 from custom_components.state_cycler.const import (
     DOMAIN,
@@ -62,6 +62,11 @@ async def test_multiple_cyclers_operate_independently(hass: HomeAssistant):
     await hass.async_block_till_done()
     assert core1._current_index == 0
     assert core2._current_index == -1
+
+    # cleanup
+    await hass.config_entries.async_unload(entry1.entry_id)
+    await hass.config_entries.async_unload(entry2.entry_id)
+    await hass.async_block_till_done()
 
 
 @pytest.mark.asyncio
@@ -128,6 +133,10 @@ async def test_cycle_actions_and_events(hass: HomeAssistant):
     # After switch there is a deterministic toggle
     assert core._current_index in (-1, 0, 1)
 
+    # cleanup
+    await hass.config_entries.async_unload(entry.entry_id)
+    await hass.async_block_till_done()
+
 
 @pytest.mark.asyncio
 async def test_timer_functionality_auto_cycle(hass: HomeAssistant):
@@ -152,16 +161,21 @@ async def test_timer_functionality_auto_cycle(hass: HomeAssistant):
     assert core._current_index == -1
 
     # Fast-forward time by 1 second to trigger timer
-    async_fire_time_changed(hass, hass.time() + timedelta(seconds=1))
+    now = dt_util.utcnow()
+    async_fire_time_changed(hass, now + timedelta(seconds=1))
     await hass.async_block_till_done()
 
     # First timer tick should turn on first state
     assert core._current_index == 0
 
     # Another tick -> move to next
-    async_fire_time_changed(hass, hass.time() + timedelta(seconds=2))
+    async_fire_time_changed(hass, now + timedelta(seconds=2))
     await hass.async_block_till_done()
     assert core._current_index in (0, 1)
+
+    # cleanup (unload will cancel the track_time_interval)
+    await hass.config_entries.async_unload(entry.entry_id)
+    await hass.async_block_till_done()
 
 
 @pytest.mark.asyncio
@@ -202,6 +216,10 @@ async def test_cycle_mode_timeout_and_future_cycle(hass: HomeAssistant):
     await hass.async_block_till_done()
     assert core._cycle_mode_active is True
 
+    # cleanup
+    await hass.config_entries.async_unload(entry.entry_id)
+    await hass.async_block_till_done()
+
 
 @pytest.mark.asyncio
 async def test_include_off_state_affects_options_and_events(hass: HomeAssistant):
@@ -234,6 +252,10 @@ async def test_include_off_state_affects_options_and_events(hass: HomeAssistant)
     await hass.async_block_till_done()
     # last event should indicate Off
     assert events and events[-1].data.get("entity_id", events[-1].data.get(ATTR_ENTITY_ID)) in ("Off", "off")
+
+    # cleanup
+    await hass.config_entries.async_unload(entry.entry_id)
+    await hass.async_block_till_done()
 
 
 @pytest.mark.asyncio
@@ -275,6 +297,10 @@ async def test_adapters_created_and_linked(hass: HomeAssistant):
     await hass.async_block_till_done()
     assert core._current_index in (0, 1)
 
+    # cleanup
+    await hass.config_entries.async_unload(entry.entry_id)
+    await hass.async_block_till_done()
+
 
 @pytest.mark.asyncio
 async def test_initialized_event_fired_on_setup(hass: HomeAssistant):
@@ -296,3 +322,8 @@ async def test_initialized_event_fired_on_setup(hass: HomeAssistant):
     await hass.async_block_till_done()
 
     assert evts and evts[-1].data["states"] == ["light.kitchen"]
+
+    # cleanup
+    await hass.config_entries.async_unload(entry.entry_id)
+    await hass.async_block_till_done()
+
