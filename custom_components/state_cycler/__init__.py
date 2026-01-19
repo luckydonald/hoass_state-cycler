@@ -68,6 +68,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         # Test environment: don't add to component; just store core
         hass.data[DOMAIN][entry.entry_id]["core"] = core_entity
 
+    # Ensure config is persisted for tests that assert its presence
+    hass.data[DOMAIN][entry.entry_id].setdefault("config", entry.data)
+
     # Forward setup to adapter platforms (select/switch/button/sensor)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
