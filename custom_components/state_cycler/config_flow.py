@@ -67,6 +67,7 @@ class StateCyclerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     ),
                 }
             ),
+            last_step=True,
         )
 
     @staticmethod
