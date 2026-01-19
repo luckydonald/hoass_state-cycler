@@ -646,13 +646,42 @@ class StateCyclerEntity(RestoreEntity, Entity):
 
     def _reset_cycle_timer(self) -> None:
         """Reset the cycle mode timer."""
-        if self._cycle_timer_cancel and callable(self._cycle_timer_cancel):
-            self._cycle_timer_cancel()
+        # If there's an existing timer cancel it. It may be a callable (handle.cancel)
+        # or a previously stored cancel function. Support both.
+        try:
+            if self._cycle_timer_cancel is not None:
+                # If we stored a callable (cancel function), call it
+                if callable(self._cycle_timer_cancel):
+                    try:
+                        self._cycle_timer_cancel()
+                    except Exception:
+                        # If it was a TimerHandle with cancel() attr, call that
+                        try:
+                            self._cycle_timer_cancel.cancel()
+                        except Exception:
+                            pass
+                else:
+                    # Fallback: try cancel attribute
+                    cancel_attr = getattr(self._cycle_timer_cancel, "cancel", None)
+                    if callable(cancel_attr):
+                        try:
+                            cancel_attr()
+                        except Exception:
+                            pass
+        except Exception:
+            _LOGGER.debug("Error while resetting cycle timer cancel function", exc_info=True)
 
         if self._timer_interval:
-            self._cycle_timer_cancel = self.hass.loop.call_later(
+            # call_later returns a TimerHandle; store a cancel callable for consistent cancelation
+            handle = self.hass.loop.call_later(
                 self._timer_interval, lambda: asyncio.create_task(self._cycle_timeout())
             )
+            # Prefer storing the callable cancel() method so _cancel_timers can call it
+            if hasattr(handle, "cancel") and callable(handle.cancel):
+                self._cycle_timer_cancel = handle.cancel
+            else:
+                # Fallback: store the handle itself
+                self._cycle_timer_cancel = handle
 
     async def _cycle_timeout(self) -> None:
         """Handle cycle timeout - next cycle will turn off."""
@@ -672,37 +701,71 @@ class StateCyclerEntity(RestoreEntity, Entity):
     def _start_timer(self) -> None:
         """Start the automatic cycling timer."""
         if self._timer_interval and not self._timer_cancel:
-            self._timer_cancel = async_track_time_interval(
+            cancel = async_track_time_interval(
                 self.hass,
                 self._timer_callback,
                 timedelta(seconds=self._timer_interval),
             )
 
-    @callback
-    def _timer_callback(self, now: Any) -> None:
-        """Handle timer callback."""
-        asyncio.create_task(self._timer_next())
-
-    async def _timer_next(self) -> None:
-        """Cycle to next state via timer."""
-        if not self._states:
-            return
-
-        if self._current_index == -1:
-            new_index = 0
-        else:
-            new_index = (self._current_index + 1) % len(self._states)
-
-        await self._cycle_to_index(new_index, "next", "timer", "timer")
+            # async_track_time_interval may return a callable (remove function) or an object
+            # with a cancel() method depending on HA version; normalize to a cancel callable.
+            try:
+                if callable(cancel):
+                    self._timer_cancel = cancel
+                elif hasattr(cancel, "cancel") and callable(cancel.cancel):
+                    self._timer_cancel = cancel.cancel
+                else:
+                    # Unknown type: store as-is and attempt to call .cancel() later
+                    self._timer_cancel = cancel
+            except Exception:
+                _LOGGER.debug("Could not normalize timer cancel handle", exc_info=True)
 
     def _cancel_timers(self) -> None:
         """Cancel all timers."""
-        if self._timer_cancel and callable(self._timer_cancel):
-            self._timer_cancel()
+        # Timer started via async_track_time_interval
+        try:
+            if self._timer_cancel is not None:
+                if callable(self._timer_cancel):
+                    try:
+                        self._timer_cancel()
+                    except Exception:
+                        # Maybe we stored an object without callable semantics
+                        try:
+                            if hasattr(self._timer_cancel, "cancel"):
+                                self._timer_cancel.cancel()
+                        except Exception:
+                            pass
+                else:
+                    # Fallback: try to call cancel attribute
+                    cancel_attr = getattr(self._timer_cancel, "cancel", None)
+                    if callable(cancel_attr):
+                        try:
+                            cancel_attr()
+                        except Exception:
+                            pass
+        finally:
             self._timer_cancel = None
 
-        if self._cycle_timer_cancel and callable(self._cycle_timer_cancel):
-            self._cycle_timer_cancel()
+        # Cycle timer (from call_later) - we stored either a cancel callable or the handle
+        try:
+            if self._cycle_timer_cancel is not None:
+                if callable(self._cycle_timer_cancel):
+                    try:
+                        self._cycle_timer_cancel()
+                    except Exception:
+                        try:
+                            if hasattr(self._cycle_timer_cancel, "cancel"):
+                                self._cycle_timer_cancel.cancel()
+                        except Exception:
+                            pass
+                else:
+                    cancel_attr = getattr(self._cycle_timer_cancel, "cancel", None)
+                    if callable(cancel_attr):
+                        try:
+                            cancel_attr()
+                        except Exception:
+                            pass
+        finally:
             self._cycle_timer_cancel = None
 
     def _safe_write_ha_state(self) -> None:
