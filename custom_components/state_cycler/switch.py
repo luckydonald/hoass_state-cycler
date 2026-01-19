@@ -7,7 +7,7 @@ from typing import Any
 
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity import DeviceInfo
 
@@ -93,17 +93,39 @@ class StateCyclerSwitch(SwitchEntity):
             snap = core.get_state_snapshot()
             self._async_update_from_core(snap)
 
+    @callback
     def _async_update_from_dispatcher(self, updated_entry_id: str) -> None:
+        """Dispatcher callback - schedule the core update on the event loop.
+
+        Dispatcher callbacks may be invoked from executor threads; ensure any
+        subsequent calls that may call async_write_ha_state are run on the
+        event loop using hass.loop.call_soon_threadsafe.
+        """
         if updated_entry_id != self._entry.entry_id:
             return
         core = self.hass.data.get(DOMAIN, {}).get(self._entry.entry_id, {}).get("core")
         if core:
             snap = core.get_state_snapshot()
-            self._async_update_from_core(snap)
+            # If we're already running inside the event loop, call directly.
+            try:
+                loop = self.hass.loop
+                if loop.is_running():
+                    # Schedule the sync update callback on the event loop thread
+                    loop.call_soon_threadsafe(self._async_update_from_core, snap)
+                else:
+                    # Fallback: call directly
+                    self._async_update_from_core(snap)
+            except Exception:
+                # Best-effort: attempt direct call if scheduling fails
+                try:
+                    self._async_update_from_core(snap)
+                except Exception:
+                    _LOGGER.debug("Failed to schedule dispatcher update for switch", exc_info=True)
 
     def _async_update_from_core(self, snapshot: dict[str, Any]) -> None:
         idx = snapshot.get(ATTR_INDEX, -1)
         is_on = idx != -1
         self._is_on = is_on
         if getattr(self, "platform", None) is not None:
+            # This must run on the event loop; callers should schedule appropriately.
             self.async_write_ha_state()
