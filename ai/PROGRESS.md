@@ -4,6 +4,7 @@
 - [x] Update README.md with complete documentation, features, installation, configuration, usage examples, and API details
 - [x] Fix hassfest validation errors (quoted YAML boolean keys in services.yaml, added missing _get_saved_state method)
 - [x] Ensure integration shows up in Home Assistant with proper configuration UI (config flow with entity list, include_off_state, timer_interval options)
+- [x] Fix manifest/platform mismatch and forwarded sensor platform setup (manifest.json, const.py, __init__.py, sensor.py)
 - [ ] Test in actual Home Assistant instance
 - [ ] Test with various entity types (lights, switches, scenes)
 - [ ] Test state restoration after HA restart
@@ -28,47 +29,23 @@
 
 ## Architecture Notes
 
-- **Custom Platform**: Uses `state_cycler` platform (not sensor/switch/etc.)
+- **Platform**: Uses standard HA platform `sensor` (manifest & PLATFORMS updated) and forwards to the main implementation in `state_cycler.py` via `sensor.py`
 - **Entity State**: Main state is the entity_id of active state or "off"
 - **State Preservation**: Saves entity attributes (brightness, color, etc.) in memory for restoration
 - **Config Storage**: All configuration in config entry data
 - **State Restoration**: Uses `RestoreEntity` to resume after HA restart
 - **Async Throughout**: Proper async/await for non-blocking operation
 
-## Files Created
+## Files Modified
 
-### Backend
-```
-custom_components/state_cycler/
-├── __init__.py
-├── const.py
-├── state_cycler.py        (entity platform)
-├── config_flow.py
-├── manifest.json
-├── services.yaml
-├── strings.json
-└── translations/
-    └── en.json
-```
-
-### Frontend
-```
-frontend/src/
-├── StateCyclerCard.vue
-└── types.ts              (already existed)
-```
-
-### Documentation
-```
-ai/
-└── PROGRESS.md           (this file)
-```
+- custom_components/state_cycler/manifest.json  (platforms -> ["sensor"]) 
+- custom_components/state_cycler/const.py      (PLATFORMS -> ["sensor"]) 
+- custom_components/state_cycler/__init__.py   (PLATFORMS -> ["sensor"]) 
+- custom_components/state_cycler/sensor.py     (forwards platform setup to state_cycler.async_setup_entry)
 
 ## Next Steps
 
-1. Write comprehensive unit tests for backend
-2. Write frontend unit tests
-3. Test in actual Home Assistant instance
-4. Update CHANGELOG.md
-5. Create example automations
-6. Package for HACS distribution
+1. Run unit tests (`pytest`) and fix any failures
+2. Validate types/lint (`mypy`, `ruff`) and fix warnings
+3. Install into a Home Assistant instance (or use local dev container) and verify the integration appears in Settings → Devices & Services → Add Integration
+4. If everything works, publish a new release and update HACS listing

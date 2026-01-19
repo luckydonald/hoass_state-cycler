@@ -14,6 +14,7 @@ from homeassistant.const import (
     STATE_UNKNOWN,
 )
 from homeassistant.core import HomeAssistant, ServiceCall, callback
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_track_time_interval
@@ -77,7 +78,7 @@ async def async_setup_platform(
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: ConfigType,
+    config_entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     _LOGGER.warning(f"Setting up entry for State Cycler… {config_entry=!r}")
@@ -136,7 +137,7 @@ class StateCyclerEntity(RestoreEntity, Entity):
 
     _attr_should_poll = False
 
-    def __init__(self, hass: HomeAssistant, config_entry: ConfigType) -> None:
+    def __init__(self, hass: HomeAssistant, config_entry: ConfigEntry) -> None:
         """Initialize the State Cycler entity."""
         self.hass = hass
         self._config_entry = config_entry
