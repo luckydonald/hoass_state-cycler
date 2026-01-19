@@ -4,6 +4,15 @@
 FRONTEND ?= $(if $(wildcard frontend),1,0)
 BACKEND  ?= $(if $(wildcard custom_components),1,0)
 
+# Detect helper commands: prefer using `uv run` where available.
+PYTEST := $(shell if command -v uv >/dev/null 2>&1; then echo 'uv run pytest'; else echo 'pytest'; fi)
+RUFF := $(shell if command -v uv >/dev/null 2>&1; then echo 'uv run ruff'; else echo 'ruff'; fi)
+YARN := $(shell if command -v yarn >/dev/null 2>&1; then echo 'yarn'; else echo 'npm run'; fi)
+
+# Default test/formatter arguments
+PYTEST_ARGS ?= tests/
+PYTEST_OPT ?= -q
+
 .PHONY: release lint format build setup help commit init fix-commits commit-fix rebase-template template-rebase
 
 help:
@@ -60,20 +69,26 @@ setup-frontend:
 ifeq ($(FRONTEND),1)
 	@echo "Setting up frontend development environment..."
 	cd frontend && yarn install
+else
+	@echo "No frontend sources detected – skipping frontend setup."
+endif
+
 test: test-py test-ts
 
+# Run python tests using uv run pytest when available, fallback to pytest
 test-py:
 ifeq ($(BACKEND),1)
 	@echo "Running Python tests..."
-	uv run pytest tests/
+	@$(PYTEST) $(PYTEST_OPT) $(PYTEST_ARGS)
 else
 	@echo "No Python sources detected – skipping backend tests."
 endif
 
+# Run frontend tests using yarn (or npm run) if frontend exists
 test-ts:
 ifeq ($(FRONTEND),1)
 	@echo "Running frontend tests..."
-	cd frontend && yarn test
+	cd frontend && $(YARN) test
 else
 	@echo "No frontend sources detected – skipping frontend tests."
 endif
@@ -83,7 +98,7 @@ test-coverage: test-coverage-py test-coverage-ts
 test-coverage-py:
 ifeq ($(BACKEND),1)
 	@echo "Running Python tests with coverage..."
-	uv run pytest tests/ --cov --cov-report=html --cov-report=term
+	@$(PYTEST) $(PYTEST_ARGS) --cov --cov-report=html --cov-report=term
 	@echo "Python coverage report generated in htmlcov/"
 else
 	@echo "No Python sources detected – skipping backend coverage."
@@ -92,14 +107,10 @@ endif
 test-coverage-ts:
 ifeq ($(FRONTEND),1)
 	@echo "Running frontend tests with coverage..."
-	cd frontend && yarn test:coverage
+	cd frontend && $(YARN) test:coverage
 	@echo "Frontend coverage report generated in frontend/coverage/"
 else
 	@echo "No frontend sources detected – skipping frontend coverage."
-endif
-
-else
-	@echo "No frontend sources detected – skipping frontend setup."
 endif
 
 lint: lint-py lint-ts
@@ -107,8 +118,8 @@ lint: lint-py lint-ts
 lint-py:
 ifeq ($(BACKEND),1)
 	@echo "Linting Python..."
-	uv run ruff check custom_components/
-	uv run ruff format --check custom_components/
+	@$(RUFF) check custom_components/
+	@$(RUFF) format --check custom_components/
 else
 	@echo "No Python sources detected – skipping backend lint."
 endif
@@ -126,9 +137,9 @@ format: format-py format-ts
 format-py:
 ifeq ($(BACKEND),1)
 	@echo "Formatting Python..."
-	uv run ruff check --fix custom_components/ || true
-	uv run ruff format custom_components/
-	uv run ruff check --fix custom_components/
+	@$(RUFF) check --fix custom_components/ || true
+	@$(RUFF) format custom_components/
+	@$(RUFF) check --fix custom_components/
 else
 	@echo "No Python sources detected – skipping backend format."
 endif
