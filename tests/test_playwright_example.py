@@ -14,7 +14,12 @@ import pytest
 
 RUN_PLAYWRIGHT = os.getenv("RUN_PLAYWRIGHT", "0") == "1"
 
-pytestmark = pytest.mark.skipif(not RUN_PLAYWRIGHT, reason="Playwright tests disabled")
+# Mark as a Playwright test so Makefile/CI can run it in isolation to avoid
+# event-loop conflicts between pytest-asyncio and Playwright's fixtures.
+pytestmark = [
+    pytest.mark.playwright,
+    pytest.mark.skipif(not RUN_PLAYWRIGHT, reason="Playwright tests disabled"),
+]
 
 
 def _start_file_server(directory: Path, port: int):
