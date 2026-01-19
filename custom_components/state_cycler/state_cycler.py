@@ -525,7 +525,7 @@ class StateCyclerEntity(RestoreEntity, Entity):
 
     def _reset_cycle_timer(self) -> None:
         """Reset the cycle mode timer."""
-        if self._cycle_timer_cancel:
+        if self._cycle_timer_cancel and callable(self._cycle_timer_cancel):
             self._cycle_timer_cancel()
 
         if self._timer_interval:
@@ -576,10 +576,10 @@ class StateCyclerEntity(RestoreEntity, Entity):
 
     def _cancel_timers(self) -> None:
         """Cancel all timers."""
-        if self._timer_cancel:
+        if self._timer_cancel and callable(self._timer_cancel):
             self._timer_cancel()
             self._timer_cancel = None
 
-        if self._cycle_timer_cancel:
+        if self._cycle_timer_cancel and callable(self._cycle_timer_cancel):
             self._cycle_timer_cancel()
             self._cycle_timer_cancel = None
