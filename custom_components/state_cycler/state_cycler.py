@@ -681,20 +681,12 @@ class StateCyclerEntity(RestoreEntity, Entity):
         EntityComponent; writing HA state in that situation raises
         NoEntitySpecifiedError. Use this helper to avoid that during unit tests.
         """
-        try:
-            # Allow write when entity has a platform or when the core is registered
-            # in hass.data for this entry (common in unit tests where the core is
-            # stored directly).
-            if getattr(self, "platform", None) is not None:
+        # Only write HA state if entity has been added to a platform. In unit
+        # tests we may instantiate the core directly without adding it to a
+        # platform, in which case writing state will raise NoEntitySpecifiedError.
+        if getattr(self, "platform", None) is not None:
+            try:
                 self.async_write_ha_state()
-                return
-            core_ref = self.hass.data.get(DOMAIN, {}).get(self._config_entry.entry_id, {}).get("core")
-            if core_ref is self:
-                # Best-effort: try to write state, but ignore errors in test env
-                try:
-                    self.async_write_ha_state()
-                except Exception:
-                    pass
-        except Exception:
-            # Silence any issues during best-effort writes in tests
-            pass
+            except Exception:
+                # Best-effort: ignore write failures in test environments
+                pass
