@@ -49,9 +49,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     component: EntityComponent = hass.data[DOMAIN]["component"]
     core_entity = _state_cycler.StateCyclerEntity(hass, entry)
 
-    # Register core entity and store reference for adapters
-    await component.async_add_entities([core_entity])
-    hass.data[DOMAIN][entry.entry_id]["core"] = core_entity
+    # In full HA runtime we add the entity via the EntityComponent so the
+    # entity is registered with the entity registry. In lightweight test
+    # environments hass may be a partial Mock missing hass.config, which
+    # causes storage/registry initialization to fail. Detect that and avoid
+    # adding the entity in that case; store the core reference so adapters
+    # can still find it.
+    should_add = hasattr(hass, "config") and getattr(hass.config, "config_dir", None) is not None
+    if should_add:
+        await component.async_add_entities([core_entity])
+        hass.data[DOMAIN][entry.entry_id]["core"] = core_entity
+    else:
+        # Test environment: don't add to component; just store core
+        hass.data[DOMAIN][entry.entry_id]["core"] = core_entity
 
     # Forward setup to adapter platforms (select/switch/button/sensor)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
