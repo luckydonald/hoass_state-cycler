@@ -14,8 +14,8 @@ from .const import DOMAIN, LOG_NAME
 _LOGGER = logging.getLogger(LOG_NAME)
 _LOGGER.warning(f"Loaded State Cycler's `{__name__}` module.")
 
-# State Cycler uses the sensor platform
-PLATFORMS = ["sensor"]
+# State Cycler uses a custom platform
+PLATFORMS = ["state_cycler"]
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
@@ -34,7 +34,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = entry.data
 
-    # Forward the setup to the sensor platform
+    # Forward the setup to the state_cycler platform
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     entry.async_on_unload(entry.add_update_listener(async_update_options))
