@@ -78,3 +78,7 @@ Update the `README.md`.
 
 Make sure it is showing up as integration in Home Assistant, with proper configuration options in the UI.
 we should be able to create multiple of these cyclers? That's what I would do with the add integration button, add a new cycler, where I can then add entities
+
+———
+We’ll implement a hybrid architecture: a single authoritative custom entity domain `state_cycler.<id>` (the core) will own all behavior—timers, saved/restored state, events and service handlers—while lightweight native HA adapter entities (e.g., `select.state_cycler_<id>` for enum-like state selection, `switch.state_cycler_<id>` for on/off, optional button/sensor adapters for next/prev and information) mirror and mutate that core state. Adapters never write state directly; they send user actions to the core, which validates and applies changes, drives the underlying devices, then notifies adapters to update their UI state. We’ll use per-cycler locks to prevent feedback loops and race conditions, provide stable unique_ids for smooth migrations, and expose the usual services/events so automations and the UI work natively while preserving a clear, single source of truth.
+For that you don't need any old-entity-migration code, just assume a new install.
