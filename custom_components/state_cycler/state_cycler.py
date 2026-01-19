@@ -387,29 +387,37 @@ class StateCyclerEntity(RestoreEntity, Entity):
         domain = entity_id.split(".")[0]
         if saved_state:
             try:
-                if saved_state["state"] == "on":
-                    await self.hass.services.async_call(
-                        domain,
-                        "turn_on",
-                        {"entity_id": entity_id},
-                        blocking=True,
-                    )
-                elif domain == "scene":
-                    await self.hass.services.async_call(
-                        domain,
-                        "turn_on",
-                        {"entity_id": entity_id},
-                        blocking=True,
-                    )
+                # Check service availability first to avoid ServiceNotFound in test envs
+                if self.hass.services and self.hass.services.has_service(domain, "turn_on"):
+                    if saved_state["state"] == "on":
+                        await self.hass.services.async_call(
+                            domain,
+                            "turn_on",
+                            {"entity_id": entity_id},
+                            blocking=True,
+                        )
+                    elif domain == "scene":
+                        await self.hass.services.async_call(
+                            domain,
+                            "turn_on",
+                            {"entity_id": entity_id},
+                            blocking=True,
+                        )
+                    else:
+                        await self.hass.services.async_call(
+                            domain,
+                            "turn_on",
+                            {
+                                "entity_id": entity_id,
+                                # Add attribute restoration logic here if needed
+                            },
+                            blocking=True,
+                        )
                 else:
-                    await self.hass.services.async_call(
+                    _LOGGER.debug(
+                        "Service %s.turn_on not available; skipping restore for %s",
                         domain,
-                        "turn_on",
-                        {
-                            "entity_id": entity_id,
-                            # Add attribute restoration logic here if needed
-                        },
-                        blocking=True,
+                        entity_id,
                     )
             except ServiceNotFound:
                 _LOGGER.warning(
@@ -435,12 +443,20 @@ class StateCyclerEntity(RestoreEntity, Entity):
 
         if domain != "scene":  # Scenes can't be turned off
             try:
-                await self.hass.services.async_call(
-                    domain,
-                    SERVICE_TURN_OFF,
-                    {ATTR_ENTITY_ID: entity_id},
-                    blocking=True,
-                )
+                if self.hass.services and self.hass.services.has_service(domain, SERVICE_TURN_OFF):
+                    await self.hass.services.async_call(
+                        domain,
+                        SERVICE_TURN_OFF,
+                        {ATTR_ENTITY_ID: entity_id},
+                        blocking=True,
+                    )
+                else:
+                    _LOGGER.debug(
+                        "Service %s.%s not available; skipping turn_off for %s",
+                        domain,
+                        SERVICE_TURN_OFF,
+                        entity_id,
+                    )
             except ServiceNotFound:
                 _LOGGER.warning(
                     "Service %s.%s not found while turning off %s",
