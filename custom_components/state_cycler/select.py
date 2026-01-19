@@ -82,6 +82,42 @@ class StateCyclerSelect(SelectEntity):
 
     @property
     def current_option(self) -> str | None:
+        # If internal current option isn't set, try to compute from core snapshot
+        if self._current_option is None:
+            core = self.hass.data.get(DOMAIN, {}).get(self._entry.entry_id, {}).get("core")
+            if core:
+                snap = core.get_state_snapshot()
+                idx = snap.get(ATTR_INDEX, -1)
+                include_off = snap.get(ATTR_INCLUDE_OFF_STATE, False)
+                # Build display names similar to _async_update_from_core
+                states = snap.get(ATTR_STATES, [])
+                friendly_names = []
+                for ent in states:
+                    state_obj = self.hass.states.get(ent)
+                    if state_obj:
+                        friendly = state_obj.attributes.get("friendly_name", ent)
+                    else:
+                        friendly = ent
+                    friendly_names.append(friendly)
+                counts: dict[str, int] = {}
+                for name in friendly_names:
+                    counts[name] = counts.get(name, 0) + 1
+                display_names: list[str] = []
+                for ent, name in zip(states, friendly_names):
+                    if counts.get(name, 0) > 1:
+                        display = f"{name} — {ent}"
+                    else:
+                        display = name
+                    display_names.append(display)
+                if include_off and idx == -1:
+                    return "Off"
+                if idx == -1:
+                    return None
+                offset = 1 if include_off else 0
+                try:
+                    return display_names[idx]
+                except Exception:
+                    return None
         return self._current_option
 
     async def async_select_option(self, option: str) -> None:
