@@ -90,3 +90,11 @@ class StateCyclerPrevButton(ButtonEntity):
             _LOGGER.warning("State Cycler core not ready for prev button")
             return
         await core.async_handle_adapter_action("prev")
+
+    async def async_added_to_hass(self) -> None:
+        await super().async_added_to_hass()
+        # Register adapter so core can call back; dispatcher not used by button adapters
+        core = self.hass.data.get(DOMAIN, {}).get(self._entry.entry_id, {}).get("core")
+        if core:
+            core.register_adapter("button_next", self)
+            core.register_adapter("button_prev", self)
