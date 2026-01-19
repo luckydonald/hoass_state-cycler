@@ -19,7 +19,7 @@ _LOGGER.warning(f"Loaded State Cycler's `{__name__}` module.")
 
 async def async_setup_services(hass: HomeAssistant) -> None:
     """Set up services for State Cycler."""
-    _LOGGER.warning(f"Setting up services for State Cycler…")
+    _LOGGER.warning("Setting up services for State Cycler…")
 
     async def handle_example_service(call: ServiceCall) -> None:
         """Handle the example service call."""
