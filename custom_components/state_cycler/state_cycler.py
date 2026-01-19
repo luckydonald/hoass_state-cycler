@@ -254,15 +254,16 @@ class StateCyclerEntity(RestoreEntity, Entity):
 
     @property
     def state(self) -> str:
-        """Return a human-friendly state for the entity."""
-        # Present a user-friendly value as the primary state (e.g. friendly name or "Off").
-        return self._get_state_friendly_name()
+        """Return the raw entity_id or 'off' as the primary state."""
+        # Primary state must be a machine-friendly token: underlying entity_id or 'off'.
+        return self._get_current_entity_id().lower()
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return entity specific state attributes."""
         attrs = {
             # ATTR_STATE stores the underlying entity_id (or "Off") for automations.
+            # Keep machine value available (entity_id or 'off') and a friendly label.
             ATTR_STATE: self._get_current_entity_id(),
             ATTR_STATE_FRIENDLY: self._get_state_friendly_name(),
             ATTR_INDEX: self._current_index,
@@ -283,12 +284,12 @@ class StateCyclerEntity(RestoreEntity, Entity):
         return attrs
 
     def _get_current_entity_id(self) -> str:
-        """Get current entity ID or 'Off'."""
+        """Get current entity ID or 'off'."""
         if self._current_index == -1:
-            return "Off"
+            return "off"
         if 0 <= self._current_index < len(self._states):
             return self._states[self._current_index]
-        return "Off"
+        return "off"
 
     def _get_state_friendly_name(self) -> str:
         """Get friendly name of current state."""
