@@ -50,6 +50,14 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
+PLATFORM_SCHEMA = vol.Schema(
+    {
+        vol.Required(CONF_STATES): vol.All(list, [str]),
+        vol.Optional(CONF_INCLUDE_OFF_STATE, default=DEFAULT_INCLUDE_OFF_STATE): bool,
+        vol.Optional(CONF_TIMER_INTERVAL): vol.All(vol.Coerce(float), vol.Range(min=0.1)),
+    }
+)
+
 
 async def async_setup_platform(
     hass: HomeAssistant,
