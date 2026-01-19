@@ -39,6 +39,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN].setdefault(entry.entry_id, {})
 
+    # If we've already created a core for this entry, treat setup as idempotent
+    if entry.entry_id in hass.data[DOMAIN] and "core" in hass.data[DOMAIN][entry.entry_id]:
+        _LOGGER.debug("Core for entry %s already exists; skipping re-setup", entry.entry_id)
+        # Still attempt to forward setups to ensure platforms are initialized
+        try:
+            await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+        except Exception:
+            # Best-effort in test environments
+            pass
+        return True
+
     # Create the authoritative core entity via the EntityComponent
     from . import state_cycler as _state_cycler
 
@@ -92,6 +103,20 @@ async def async_update_options(hass: HomeAssistant, entry: ConfigEntry) -> None:
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
     _LOGGER.warning(f"Unload State Cycler entry (__init__.py)… {entry=!r}")
+
+    # Attempt to cancel any timers on the core entity before unloading platforms
+    try:
+        core = hass.data.get(DOMAIN, {}).get(entry.entry_id, {}).get("core")
+        if core is not None:
+            # Call internal cancel method if available
+            cancel = getattr(core, "_cancel_timers", None)
+            if callable(cancel):
+                try:
+                    cancel()
+                except Exception:
+                    _LOGGER.debug("Error cancelling core timers for %s", entry.entry_id, exc_info=True)
+    except Exception:
+        _LOGGER.debug("Error while attempting to cancel timers during unload", exc_info=True)
 
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 

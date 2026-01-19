@@ -11,6 +11,8 @@
 - [ ] Test timer functionality
 - [ ] Test with multiple State Cycler entities
 - [ ] Test frontend card integration
+- [x] Add comprehensive Home Assistant integration tests in `tests/test_integration_full.py`
+- [ ] Run tests in CI (local `make test-py` to validate)
 
 ### Enhancements (Future)
 - [ ] Drag-and-drop reordering in frontend
