@@ -80,13 +80,17 @@ test-py:
 ifeq ($(BACKEND),1)
 	@echo "Running Python tests..."
 
-	# If RUN_PLAYWRIGHT is set, install Playwright test helpers and browsers
-ifeq ($(RUN_PLAYWRIGHT),1)
-		@echo "RUN_PLAYWRIGHT=1 detected: installing Playwright test dependencies and browsers..."
-		@python -m pip install --upgrade pip
-		@python -m pip install pytest-playwright playwright || true
-		@python -m playwright install --with-deps || true
-endif
+	# Ensure dev dependencies are installed via uv if available; fallback to
+	# pip if uv is not present. Using uv keeps dependencies in sync with
+	# pyproject.toml dependency-groups.
+	if command -v uv >/dev/null 2>&1; then \
+		echo "uv found; syncing dev dependencies..."; \
+		uv sync --dev; \
+	else \
+		echo "uv not found; ensure dev deps installed manually (pytest-playwright/playwright)..."; \
+		python -m pip install --upgrade pip; \
+		python -m pip install pytest-playwright playwright || true; \
+	fi
 
 	@echo "Running Python tests (excluding Playwright-marked tests)..."
 	@$(PYTEST) $(PYTEST_OPT) $(PYTEST_ARGS) -m "not playwright"
