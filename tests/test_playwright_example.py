@@ -6,6 +6,7 @@ import tempfile
 from pathlib import Path
 
 import pytest
+from playwright.sync_api import sync_playwright
 
 # This test demonstrates using Playwright to open a simple HTTP page that
 # contains a snapshot of a (mocked) Home Assistant state. It is a scaffold —
@@ -59,13 +60,13 @@ def _write_snapshot_page(directory: Path, entity_id: str, friendly: str) -> Path
     return p
 
 
-@pytest.mark.asyncio
-async def test_playwright_sees_state(page):
-    """A minimal smoke test using Playwright.
+def test_playwright_sees_state():
+    """A minimal smoke test using Playwright's sync API.
 
     This test does NOT start Home Assistant — it demonstrates how to use
     Playwright in CI to validate a page that contains a snapshot of HA state.
-    Replace with a full frontend + hass integration for real end-to-end tests.
+    Using the sync API avoids pytest-playwright's async fixtures and thus
+    prevents asyncio event-loop conflicts with pytest-asyncio fixtures.
     """
     # Prepare a simple HTML page that displays a mocked hass entity
     tmp = Path(tempfile.mkdtemp(prefix="playwright-test-"))
@@ -73,15 +74,17 @@ async def test_playwright_sees_state(page):
     friendly = "Kitchen Lights"
     _write_snapshot_page(tmp, entity_id, friendly)
 
-    # Start a simple static file server serving that directory
-    server = _start_file_server(tmp, 8765)
+    # Load the generated file via file:// to avoid network/socket usage which
+    # is blocked in the test environment. Playwright supports file URLs.
+    p = tmp / "index.html"
 
-    try:
-        await page.goto("http://127.0.0.1:8765/index.html")
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch(headless=True)
+        page = browser.new_page()
+        page.goto(f"file://{p.resolve()}")
         # Basic assertions that the page shows expected content
-        content = await page.text_content("#friendly")
+        content = page.text_content("#friendly")
         assert friendly in content
-        eid = await page.text_content("#entity")
+        eid = page.text_content("#entity")
         assert entity_id in eid
-    finally:
-        server.shutdown()
+        browser.close()
