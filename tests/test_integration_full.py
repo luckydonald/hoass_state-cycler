@@ -18,11 +18,11 @@ from pytest_homeassistant_custom_component.common import (
 from homeassistant.const import ATTR_ENTITY_ID
 from homeassistant.core import HomeAssistant
 from homeassistant.util import dt as dt_util
+import uuid
 
 from custom_components.state_cycler.const import (
     DOMAIN,
     EVENT_CYCLED,
-    EVENT_CYCLE_TIMEOUT,
     EVENT_INITIALIZED,
 )
 
@@ -34,13 +34,13 @@ async def test_multiple_cyclers_operate_independently(hass: HomeAssistant):
     hass.states.async_set("light.b", "on", {"friendly_name": "B"})
     hass.states.async_set("light.c", "on", {"friendly_name": "C"})
 
-    entry1 = MockConfigEntry(domain=DOMAIN, data={
+    entry1 = MockConfigEntry(entry_id=str(uuid.uuid4()), domain=DOMAIN, data={
         "name": "Cycler 1",
         "states": ["light.a", "light.b"],
         "include_off_state": False,
         "timer_interval": None,
     })
-    entry2 = MockConfigEntry(domain=DOMAIN, data={
+    entry2 = MockConfigEntry(entry_id=str(uuid.uuid4()), domain=DOMAIN, data={
         "name": "Cycler 2",
         "states": ["light.c"],
         "include_off_state": False,
@@ -75,7 +75,7 @@ async def test_cycle_actions_and_events(hass: HomeAssistant):
     hass.states.async_set("light.kitchen", "on", {"friendly_name": "Kitchen Lights"})
     hass.states.async_set("switch.lamp", "off", {"friendly_name": "Bedside Lamp"})
 
-    entry = MockConfigEntry(domain=DOMAIN, data={
+    entry = MockConfigEntry(entry_id=str(uuid.uuid4()), domain=DOMAIN, data={
         "name": "Event Cycler",
         "states": ["light.kitchen", "switch.lamp"],
         "include_off_state": False,
@@ -144,7 +144,7 @@ async def test_timer_functionality_auto_cycle(hass: HomeAssistant):
     hass.states.async_set("light.a", "on", {"friendly_name": "A"})
     hass.states.async_set("light.b", "on", {"friendly_name": "B"})
 
-    entry = MockConfigEntry(domain=DOMAIN, data={
+    entry = MockConfigEntry(entry_id=str(uuid.uuid4()), domain=DOMAIN, data={
         "name": "Timer Cycler",
         "states": ["light.a", "light.b"],
         "include_off_state": False,
@@ -188,7 +188,7 @@ async def test_cycle_mode_timeout_and_future_cycle(hass: HomeAssistant):
     """
     hass.states.async_set("light.a", "on", {"friendly_name": "A"})
 
-    entry = MockConfigEntry(domain=DOMAIN, data={
+    entry = MockConfigEntry(entry_id=str(uuid.uuid4()), domain=DOMAIN, data={
         "name": "Mode Cycler",
         "states": ["light.a"],
         "include_off_state": False,
@@ -226,7 +226,7 @@ async def test_include_off_state_affects_options_and_events(hass: HomeAssistant)
     """When include_off_state is True the 'Off' option should be present and events reflect it."""
     hass.states.async_set("light.a", "on", {"friendly_name": "A"})
 
-    entry = MockConfigEntry(domain=DOMAIN, data={
+    entry = MockConfigEntry(entry_id=str(uuid.uuid4()), domain=DOMAIN, data={
         "name": "Off Cycler",
         "states": ["light.a"],
         "include_off_state": True,
@@ -264,7 +264,7 @@ async def test_adapters_created_and_linked(hass: HomeAssistant):
     hass.states.async_set("light.kitchen", "on", {"friendly_name": "Kitchen Lights"})
     hass.states.async_set("switch.lamp", "off", {"friendly_name": "Bedside Lamp"})
 
-    entry = MockConfigEntry(domain=DOMAIN, data={
+    entry = MockConfigEntry(entry_id=str(uuid.uuid4()), domain=DOMAIN, data={
         "name": "Adapter Cycler",
         "states": ["light.kitchen", "switch.lamp"],
         "include_off_state": False,
@@ -307,7 +307,7 @@ async def test_initialized_event_fired_on_setup(hass: HomeAssistant):
     """Ensure the integration fires EVENT_INITIALIZED when entity is added."""
     hass.states.async_set("light.kitchen", "on", {"friendly_name": "Kitchen Lights"})
 
-    entry = MockConfigEntry(domain=DOMAIN, data={
+    entry = MockConfigEntry(entry_id=str(uuid.uuid4()), domain=DOMAIN, data={
         "name": "Init Cycler",
         "states": ["light.kitchen"],
         "include_off_state": False,
