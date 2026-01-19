@@ -30,14 +30,27 @@ jobs:
       - name: Upgrade pip
         run: python -m pip install --upgrade pip
 
-      - name: Install test dependencies
+      - name: Install test dependencies (including pytest-homeassistant-custom-component from GitHub)
         run: |
-          python -m pip install ruff mypy pytest pytest-asyncio pytest-cov pytest-homeassistant-custom-component homeassistant
+          python -m pip install --upgrade pip
+          # Install test helpers pinned by pyproject.dev group if available
+          python -m pip install ruff mypy pytest pytest-asyncio pytest-cov
+          # Install pytest-playwright and Playwright browsers
+          python -m pip install pytest-playwright playwright
+          # Install pytest-homeassistant-custom-component from MatthewFlamm's repo for latest HA fixtures
+          python -m pip install "git+https://github.com/MatthewFlamm/pytest-homeassistant-custom-component.git@main"
+          # Install a Home Assistant core wheel for tests (may be large; adjust as needed)
+          python -m pip install homeassistant
 
-      - name: Run backend tests (Makefile target)
+      - name: Install Playwright browsers
+        run: |
+          python -m playwright install --with-deps
+
+      - name: Run backend tests (Makefile target) including Playwright
         run: |
           # Ensure we run backend tests even if Makefile detection would skip
           export BACKEND=1
+          export RUN_PLAYWRIGHT=1
           make test-py
         env:
           PYTHONUNBUFFERED: 1
