@@ -23,5 +23,7 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up State Cycler sensors by forwarding to state_cycler.async_setup_entry."""
-    _LOGGER.warning(f"Forwarding State Cycler sensor setup to state_cycler; entry={entry!r}")
+    _LOGGER.warning(
+        f"Forwarding State Cycler sensor setup to state_cycler; entry={entry!r}"
+    )
     await _state_cycler.async_setup_entry(hass, entry, async_add_entities)
