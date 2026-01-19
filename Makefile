@@ -5,9 +5,9 @@ FRONTEND ?= $(if $(wildcard frontend),1,0)
 BACKEND  ?= $(if $(wildcard custom_components),1,0)
 
 # Detect helper commands: prefer using `uv run` where available.
-PYTEST := $(shell if command -v uv >/dev/null 2>&1; then echo 'uv run pytest'; else echo 'pytest'; fi)
-RUFF := $(shell if command -v uv >/dev/null 2>&1; then echo 'uv run ruff'; else echo 'ruff'; fi)
-YARN := $(shell if command -v yarn >/dev/null 2>&1; then echo 'yarn'; else echo 'npm run'; fi)
+PYTEST := $(shell command -v uv >/dev/null 2>&1 && echo 'uv run pytest' || echo 'pytest')
+RUFF := $(shell command -v uv >/dev/null 2>&1 && echo 'uv run ruff' || echo 'ruff')
+YARN := $(shell command -v yarn >/dev/null 2>&1 && echo 'yarn' || echo 'npm run')
 
 # Default test/formatter arguments
 PYTEST_ARGS ?= tests/
