@@ -12,6 +12,7 @@ from custom_components.state_cycler.services import (
 def hass():
     """Create a mock Home Assistant instance."""
     hass_mock = Mock(spec=HomeAssistant)
+    hass_mock.data = {"custom_components": {}}
     hass_mock.services = Mock()
     hass_mock.services.async_register = AsyncMock()
     hass_mock.services.async_remove = AsyncMock()
