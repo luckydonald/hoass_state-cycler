@@ -67,6 +67,7 @@ async def async_setup_platform(
 ) -> None:
     """Set up the State Cycler platform."""
     # Platform setup is handled via config entries
+    _LOGGER.warning("Setup via config entries only.")
     pass
 
 
