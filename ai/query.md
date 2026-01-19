@@ -85,3 +85,4 @@ For that you don't need any old-entity-migration code, just assume a new install
 - Implement friendly-label mapping for the Select adapter so the user sees friendly names in the dropdown while the core receives machine ids.
 - Add unit tests for core↔adapters
   - adapt Makefile to run tests
+  - make sure pipeline runs tests
