@@ -81,12 +81,12 @@ ifeq ($(BACKEND),1)
 	@echo "Running Python tests..."
 
 	# If RUN_PLAYWRIGHT is set, install Playwright test helpers and browsers
-	ifeq ($(RUN_PLAYWRIGHT),1)
+ifeq ($(RUN_PLAYWRIGHT),1)
 		@echo "RUN_PLAYWRIGHT=1 detected: installing Playwright test dependencies and browsers..."
 		@python -m pip install --upgrade pip
 		@python -m pip install pytest-playwright playwright || true
 		@python -m playwright install --with-deps || true
-	endif
+endif
 	@$(PYTEST) $(PYTEST_OPT) $(PYTEST_ARGS)
 else
 	@echo "No Python sources detected – skipping backend tests."
