@@ -4,7 +4,6 @@ These tests run the integration's `async_setup_entry` and exercise the core
 entity behavior (setup, cycling, unload) against a full hass instance
 provided by pytest-homeassistant-custom-component.
 """
-from unittest.mock import Mock
 
 import pytest
 
