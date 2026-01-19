@@ -59,6 +59,9 @@ class StateCyclerSelect(SelectEntity):
             core.register_adapter("select", self)
             self._async_update_from_core(core.get_state_snapshot())
 
+        # Mark adapter initialized to allow later writes
+        self._initialized = True
+
     @property
     def name(self) -> str:
         return f"{self._name} (Selector)"
@@ -186,10 +189,9 @@ class StateCyclerSelect(SelectEntity):
         else:
             curr = self._options[(idx + offset)]
 
-        # Write state
+        # Write state (only after initialization)
         self._suppress_update = True
         self._current_option = curr
-        # Only write HA state when entity has been added to a platform/component
-        if getattr(self, "platform", None) is not None:
+        if getattr(self, "platform", None) is not None and getattr(self, "_initialized", False):
             self.async_write_ha_state()
         self._suppress_update = False
