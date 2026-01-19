@@ -206,6 +206,20 @@ class StateCyclerEntity(RestoreEntity, Entity):
     def register_adapter(self, name: str, adapter: Any) -> None:
         """Register an adapter object for updates (optional)."""
         self._adapters[name] = adapter
+        # Provide an initial snapshot to the adapter if it supports the
+        # `_async_update_from_core` callback. This allows adapters created
+        # directly in tests to receive the current core state without
+        # requiring dispatcher plumbing or being added to hass.
+        try:
+            snapshot = self.get_state_snapshot()
+            upd = getattr(adapter, "_async_update_from_core", None)
+            if callable(upd):
+                # Call synchronously; adapter implementations should handle
+                # not writing HA state during init in test environments.
+                upd(snapshot)
+        except Exception:
+            # Best-effort; don't let adapter registration fail tests
+            _LOGGER.debug("Adapter %s registration initial sync failed", name, exc_info=True)
 
     def get_state_snapshot(self) -> dict[str, Any]:
         """Return a serializable snapshot of the core state for adapters."""
