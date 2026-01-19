@@ -31,16 +31,19 @@ class StateCyclerSwitch(SwitchEntity):
         self.hass = hass
         self._entry = entry
         self._name = entry.data.get("name", "State Cycler")
+        self._attr_name = f"{self._name} (Power)"
         self._unique_id = f"{entry.entry_id}_switch"
         self._is_on = False
 
         # Listen for config updates / core notifications
-        async_dispatcher_connect(
-            hass, SIGNAL_UPDATE, self._async_update_from_dispatcher
-        )
+        try:
+            if isinstance(getattr(hass, "data", None), dict):
+                async_dispatcher_connect(hass, SIGNAL_UPDATE, self._async_update_from_dispatcher)
+        except Exception:
+            pass
 
         # If core exists, register adapter and sync
-        core = hass.data.get(DOMAIN, {}).get(entry.entry_id, {}).get("core")
+        core = hass.data.get(entry.entry_id, {}).get("core")
         if core:
             core.register_adapter("switch", self)
             snap = core.get_state_snapshot()
@@ -99,4 +102,5 @@ class StateCyclerSwitch(SwitchEntity):
         idx = snapshot.get(ATTR_INDEX, -1)
         is_on = idx != -1
         self._is_on = is_on
-        self.async_write_ha_state()
+        if getattr(self, "platform", None) is not None:
+            self.async_write_ha_state()
