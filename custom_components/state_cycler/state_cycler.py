@@ -417,6 +417,12 @@ class StateCyclerEntity(RestoreEntity, Entity):
                     domain,
                     entity_id,
                 )
+            except Exception:
+                _LOGGER.debug(
+                    "Ignored error while restoring state for %s: %s",
+                    entity_id,
+                    exc_info=True,
+                )
 
     def _get_saved_state(self, entity_id: str) -> dict[str, Any] | None:
         """Get the saved state for an entity."""
@@ -442,6 +448,12 @@ class StateCyclerEntity(RestoreEntity, Entity):
                     SERVICE_TURN_OFF,
                     entity_id,
                 )
+            except Exception:
+                _LOGGER.debug(
+                    "Ignored error while turning off %s: %s",
+                    entity_id,
+                    exc_info=True,
+                )
 
     async def _turn_on_entity(self, entity_id: str) -> None:
         """Turn on an entity, restoring state if available."""
@@ -450,6 +462,8 @@ class StateCyclerEntity(RestoreEntity, Entity):
         except ServiceNotFound:
             # _restore_entity_state already logs, but be defensive here.
             _LOGGER.warning("Service not found while turning on %s", entity_id)
+        except Exception:
+            _LOGGER.debug("Ignored error while turning on %s", entity_id, exc_info=True)
 
     async def _cycle_to_index(
         self,
