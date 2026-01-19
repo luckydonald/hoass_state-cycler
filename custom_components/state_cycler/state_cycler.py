@@ -184,6 +184,15 @@ class StateCyclerEntity(RestoreEntity, Entity):
             ATTR_INDEX: self._current_index,
             ATTR_INCLUDE_OFF_STATE: self._include_off_state,
             ATTR_TIMER_INTERVAL: self._timer_interval,
+            # Machine state (entity_id or 'off') and friendly label
+            ATTR_STATE: self._get_current_entity_id(),
+            ATTR_STATE_FRIENDLY: self._get_state_friendly_name(),
+            ATTR_LAST_INDEX: self._last_index,
+            ATTR_LAST_STATE: (
+                self._states[self._last_index]
+                if self._last_index is not None and 0 <= self._last_index < len(self._states)
+                else ("off" if self._last_index == -1 else None)
+            ),
         }
 
     async def async_handle_adapter_action(self, action: str, *, index: int | None = None) -> None:
@@ -254,15 +263,16 @@ class StateCyclerEntity(RestoreEntity, Entity):
 
     @property
     def state(self) -> str:
-        """Return a human-friendly state for the entity."""
-        # Present a user-friendly value as the primary state (e.g. friendly name or "Off").
-        return self._get_state_friendly_name()
+        """Return the raw entity_id or 'off' as the primary state."""
+        # Primary state must be a machine-friendly token: underlying entity_id or 'off'.
+        return self._get_current_entity_id().lower()
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return entity specific state attributes."""
         attrs = {
             # ATTR_STATE stores the underlying entity_id (or "Off") for automations.
+            # Keep machine value available (entity_id or 'off') and a friendly label.
             ATTR_STATE: self._get_current_entity_id(),
             ATTR_STATE_FRIENDLY: self._get_state_friendly_name(),
             ATTR_INDEX: self._current_index,
@@ -282,13 +292,23 @@ class StateCyclerEntity(RestoreEntity, Entity):
 
         return attrs
 
+    @property
+    def device_info(self) -> dict[str, Any]:
+        """Return device information for the device registry."""
+        return {
+            "identifiers": {(DOMAIN, self._config_entry.entry_id)},
+            "name": self._attr_name,
+            "manufacturer": "Custom",
+            "model": "State Cycler",
+        }
+
     def _get_current_entity_id(self) -> str:
-        """Get current entity ID or 'Off'."""
+        """Get current entity ID or 'off'."""
         if self._current_index == -1:
-            return "Off"
+            return "off"
         if 0 <= self._current_index < len(self._states):
             return self._states[self._current_index]
-        return "Off"
+        return "off"
 
     def _get_state_friendly_name(self) -> str:
         """Get friendly name of current state."""

@@ -9,6 +9,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.dispatcher import async_dispatcher_send
+from homeassistant.helpers.entity_component import EntityComponent
 
 from .const import DOMAIN, LOG_NAME, PLATFORMS, SIGNAL_UPDATE
 
@@ -23,6 +24,11 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
     _LOGGER.warning(f"Setting up State Cycler (__init__.py)… {config=!r}")
 
     hass.data.setdefault(DOMAIN, {})
+
+    # Create and store the EntityComponent for the custom domain so we can add core entities
+    component = EntityComponent(_LOGGER, DOMAIN, hass)
+    hass.data[DOMAIN]["component"] = component
+
     return True
 
 
@@ -32,8 +38,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN].setdefault(entry.entry_id, {})
 
-    # Store a placeholder for core object; adapters will register themselves under hass.data[DOMAIN][entry.entry_id]
-    hass.data[DOMAIN][entry.entry_id]["core"] = None
+    # Create the authoritative core entity via the EntityComponent
+    from . import state_cycler as _state_cycler
+
+    component: EntityComponent = hass.data[DOMAIN]["component"]
+    core_entity = _state_cycler.StateCyclerEntity(hass, entry)
+
+    # Register core entity and store reference for adapters
+    await component.async_add_entities([core_entity])
+    hass.data[DOMAIN][entry.entry_id]["core"] = core_entity
 
     # Forward setup to adapter platforms (select/switch/button/sensor)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
@@ -60,6 +73,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
     if unload_ok and entry.entry_id in hass.data[DOMAIN]:
+        # Remove core entity reference
         hass.data[DOMAIN].pop(entry.entry_id)
 
     return unload_ok
