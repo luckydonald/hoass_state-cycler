@@ -102,3 +102,6 @@ For that you don't need any old-entity-migration code, just assume a new install
       - Test error handling for out-of-bounds indices in the `to` action
       - Test that the sensors, buttons, switches, etc. are properly created and linked to the core entity, and properly reflect or influence the state
       - Test the proper firing of events with correct attributes
+
+———
+Merge the python-tests into the CI pipleline, so that they run on each PR.
