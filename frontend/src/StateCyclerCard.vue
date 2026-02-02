@@ -55,7 +55,7 @@ const includeOffState = computed(() => entity.value?.attributes.include_off_stat
 const states = computed(() => entity.value?.attributes.states || []);
 
 // Helper to call service
-async function callService(service: string, data: any = {}) {
+async function callService(service: string, data: Record<string, unknown> = {}) {
   if (!props.hass || !props.config.entity) return;
   await props.hass.callService('state_cycler', service, {
     ...data,
