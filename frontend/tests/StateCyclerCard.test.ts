@@ -1,53 +1,3 @@
-    const wrapper = mount(StateCyclerCard, {
-      props: {
-        hass: mockHass,
-        config: mockConfig,
-      },
-    });
-
-    const activeLi = wrapper.find('.states-list li.active');
-    expect(activeLi.text()).toContain('light.living_room');
-  });
-
-  it('shows no entity message when entity not found', () => {
-    const wrapper = mount(StateCyclerCard, {
-      props: {
-        hass: mockHass,
-        config: { entity: 'state_cycler.nonexistent' },
-      },
-    });
-
-    expect(wrapper.text()).toContain('No State Cycler entity configured or found.');
-  });
-
-  it('handles null hass gracefully', () => {
-    const wrapper = mount(StateCyclerCard, {
-      props: {
-        hass: null,
-        config: mockConfig,
-      },
-    });
-
-    expect(wrapper.exists()).toBe(true);
-  });
-
-  it('shows turn on when off', () => {
-    mockEntity.attributes.toggle_state = false;
-    mockEntity.attributes.index = -1;
-    mockEntity.attributes.state_friendly = 'Off';
-
-    const wrapper = mount(StateCyclerCard, {
-      props: {
-        hass: mockHass,
-        config: mockConfig,
-      },
-    });
-
-    expect(wrapper.text()).toContain('Status: Off');
-    const toggleButton = wrapper.findAll('ha-button')[0];
-    expect(toggleButton.text()).toContain('Turn On');
-  });
-});
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import StateCyclerCard from '../src/StateCyclerCard.vue';
@@ -82,7 +32,7 @@ describe('StateCyclerCard', () => {
 
     mockHass = {
       states: {
-        'state_cycler.test': mockEntity,
+        ['state_cycler.test']: mockEntity,
       },
       services: {},
       user: {
@@ -220,3 +170,53 @@ describe('StateCyclerCard', () => {
   });
 
   it('highlights active state in list', () => {
+    const wrapper = mount(StateCyclerCard, {
+      props: {
+        hass: mockHass,
+        config: mockConfig,
+      },
+    });
+
+    const activeLi = wrapper.find('.states-list li.active');
+    expect(activeLi.text()).toContain('light.living_room');
+  });
+
+  it('shows no entity message when entity not found', () => {
+    const wrapper = mount(StateCyclerCard, {
+      props: {
+        hass: mockHass,
+        config: { entity: 'state_cycler.nonexistent' },
+      },
+    });
+
+    expect(wrapper.text()).toContain('No State Cycler entity configured or found.');
+  });
+
+  it('handles null hass gracefully', () => {
+    const wrapper = mount(StateCyclerCard, {
+      props: {
+        hass: null,
+        config: mockConfig,
+      },
+    });
+
+    expect(wrapper.exists()).toBe(true);
+  });
+
+  it('shows turn on when off', () => {
+    mockEntity.attributes.toggle_state = false;
+    mockEntity.attributes.index = -1;
+    mockEntity.attributes.state_friendly = 'Off';
+
+    const wrapper = mount(StateCyclerCard, {
+      props: {
+        hass: mockHass,
+        config: mockConfig,
+      },
+    });
+
+    expect(wrapper.text()).toContain('Status: Off');
+    const toggleButton = wrapper.findAll('ha-button')[0];
+    expect(toggleButton.text()).toContain('Turn On');
+  });
+});
