@@ -109,10 +109,16 @@ describe('StateCyclerCard', () => {
   });
 
   it('displays entity state when entity is configured', () => {
-    const configWithEntity: CardConfig = {
-      ...mockConfig,
-      entity: 'sensor.test',
-    };
+    const wrapper = mount(StateCyclerCard, {
+      props: {
+        hass: mockHass,
+        config: { ...mockConfig, entity: 'state_cycler.test' },
+      },
+    });
+
+    // Ensure the configured entity's friendly name appears
+    expect(wrapper.text()).toContain('Living Room Light');
+  });
 
   it('calls switch service on toggle button click', async () => {
     const wrapper = mount(StateCyclerCard, {
