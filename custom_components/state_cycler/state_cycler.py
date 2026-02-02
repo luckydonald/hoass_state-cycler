@@ -736,9 +736,16 @@ class StateCyclerEntity(RestoreEntity, Entity):
         """
         try:
             # Schedule the async task on HA's loop to perform the actual tick.
-            # Use create_task to run asynchronously without blocking the interval
-            # callback. Use the instance method async_next to advance state.
-            asyncio.get_event_loop().call_soon_threadsafe(lambda: asyncio.create_task(self.async_next()))
+            # Use hass.async_create_task to ensure the coroutine runs under
+            # Home Assistant's task handling.
+            try:
+                # If we're not on HA's thread, schedule via call_soon_threadsafe
+                self.hass.loop.call_soon_threadsafe(
+                    lambda: self.hass.async_create_task(self.async_next())
+                )
+            except RuntimeError:
+                # Fallback: schedule directly if we're on HA's loop
+                self.hass.async_create_task(self.async_next())
         except Exception:
             _LOGGER.exception("Error in timer callback")
 
