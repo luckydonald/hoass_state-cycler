@@ -13,8 +13,6 @@ import type {
 import type {
   CardConfig,
   HomeAssistant,
-  MountedWrapperExtras,
-  Wrapper,
 } from './types';
 
 interface StateCyclerCardConfig extends CardConfig {
