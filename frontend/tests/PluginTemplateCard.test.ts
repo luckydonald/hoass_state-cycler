@@ -44,7 +44,7 @@ describe('StateCyclerCard', () => {
 
     mockHass = {
       states: {
-        'state_cycler.test': mockEntity,
+        ['state_cycler.test']: mockEntity,
       },
       services: {},
       user: {
