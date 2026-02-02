@@ -512,3 +512,21 @@ that does not look like the file it should be
 
 the hassfest test on github failed:
 invalid slug True (try true) @ data[True]. Got {'name': 'Turn On', 'description': 'Turn on the last selected state, or reapply the current state if already on.', 'target': {'entity': {'domain': 'state_cycler'}}} 
+
+———
+
+The pipeline fails on "Install Playwright Browsers" with:
+```txt
+Run python -m playwright install --with-deps
+  python -m playwright install --with-deps
+  shell: /usr/bin/bash -e {0}
+  env:
+    pythonLocation: /opt/hostedtoolcache/Python/3.12.12/x64
+    PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.12/x64/lib/pkgconfig
+    Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.12/x64
+    Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.12/x64
+    Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.12/x64
+    LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.12/x64/lib
+/opt/hostedtoolcache/Python/3.12.12/x64/bin/python: No module named playwright
+Error: Process completed with exit code 1.
+```
