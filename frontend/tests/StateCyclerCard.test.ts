@@ -1,7 +1,12 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
+import {
+  beforeEach,
+  describe, expect, it, vi,
+} from 'vitest';
+
 import StateCyclerCard from '../src/StateCyclerCard.vue';
-import type { HomeAssistant, CardConfig, StateCyclerEntity } from '../src/types';
+
+import type { CardConfig, HomeAssistant, StateCyclerEntity } from '../src/types';
 
 describe('StateCyclerCard', () => {
   let mockHass: HomeAssistant;
@@ -19,7 +24,11 @@ describe('StateCyclerCard', () => {
         index: 0,
         toggle_state: true,
         include_off_state: false,
-        states: ['light.living_room', 'light.kitchen', 'scene.movie'],
+        states: [
+          'light.living_room',
+          'light.kitchen',
+          'scene.movie',
+        ],
       },
       last_changed: '2024-01-01T00:00:00Z',
       last_updated: '2024-01-01T00:00:00Z',
