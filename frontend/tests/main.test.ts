@@ -33,11 +33,11 @@ describe('main.ts registration', () => {
     // Check that customElements.define was called
     // vitest's `vi.fn()` is used for mocking; assert call counts without casting to jest.Mock
     expect(global.customElements.define).toHaveBeenCalledWith(
-      'plugin-template-card',
+      'state-cycler-card',
       expect.any(Function),
     );
     expect(global.customElements.define).toHaveBeenCalledWith(
-      'plugin-template-card-editor',
+      'state-cycler-card-editor',
       expect.any(Function),
     );
   });

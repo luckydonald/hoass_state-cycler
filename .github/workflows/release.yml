@@ -45,7 +45,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: frontend-build
-          path: custom_components/plugin_template/www/plugin-template-card.js
+          path: custom_components/state_cycler/www/state-cycler-card.js
 
   release:
     name: Create Release
@@ -59,7 +59,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: frontend-build
-          path: custom_components/plugin_template/www/
+          path: custom_components/state_cycler/www/
 
       - name: Get version from tag
         id: version
@@ -67,19 +67,19 @@ jobs:
 
       - name: Update manifest version
         run: |
-          sed -i 's/"version": ".*"/"version": "${{ steps.version.outputs.version }}"/' custom_components/plugin_template/manifest.json
+          sed -i 's/"version": ".*"/"version": "${{ steps.version.outputs.version }}"/' custom_components/state_cycler/manifest.json
 
       - name: Create release zip
         run: |
-          # HACS expects zip contents to be extracted directly into custom_components/plugin_template/
+          # HACS expects zip contents to be extracted directly into custom_components/state_cycler/
           # So we zip the contents, not the folder itself
-          cd custom_components/plugin_template
-          zip -r ../../plugin-template.zip .
+          cd custom_components/state_cycler
+          zip -r ../../state-cycler.zip .
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: plugin-template.zip
+          files: state-cycler.zip
           generate_release_notes: true
           draft: false
           prerelease: ${{ contains(github.ref, '-beta') || contains(github.ref, '-alpha') || contains(github.ref, '-rc') }}

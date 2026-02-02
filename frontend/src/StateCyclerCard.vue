@@ -34,7 +34,7 @@ onUnmounted(() => {
 });
 
 // Computed
-const cardTitle = computed(() => props.config.title ?? 'Plugin Template');
+const cardTitle = computed(() => props.config.title ?? 'State Cycler');
 
 // Helper to get entity state
 const getEntityState = (entityId: string) => {
