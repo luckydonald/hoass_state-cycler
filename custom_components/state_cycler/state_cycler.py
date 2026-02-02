@@ -728,6 +728,20 @@ class StateCyclerEntity(RestoreEntity, Entity):
             except Exception:
                 _LOGGER.debug("Could not normalize timer cancel handle", exc_info=True)
 
+    def _timer_callback(self, now) -> None:
+        """Callback executed by async_track_time_interval.
+
+        Schedule the asynchronous tick handler on HA's event loop. Keep this
+        synchronous so async_track_time_interval can call it directly.
+        """
+        try:
+            # Schedule the async task on HA's loop to perform the actual tick.
+            # Use create_task to run asynchronously without blocking the interval
+            # callback. Use the instance method async_next to advance state.
+            asyncio.get_event_loop().call_soon_threadsafe(lambda: asyncio.create_task(self.async_next()))
+        except Exception:
+            _LOGGER.exception("Error in timer callback")
+
     def _cancel_timers(self) -> None:
         """Cancel all timers."""
         # Timer started via async_track_time_interval
@@ -816,6 +830,7 @@ class StateCyclerEntity(RestoreEntity, Entity):
             try:
                 upd = getattr(adapter, "_async_update_from_core", None)
                 if callable(upd):
+
                     # Ensure adapter updates run on HA's event loop thread to avoid
                     # calling async_write_ha_state from executor threads.
                     try:
