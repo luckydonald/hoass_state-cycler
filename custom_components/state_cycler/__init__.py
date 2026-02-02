@@ -6,7 +6,6 @@ import logging
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.dispatcher import async_dispatcher_send
@@ -41,8 +40,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data[DOMAIN].setdefault(entry.entry_id, {})
 
     # If we've already created a core for this entry, treat setup as idempotent
-    if entry.entry_id in hass.data[DOMAIN] and "core" in hass.data[DOMAIN][entry.entry_id]:
-        _LOGGER.debug("Core for entry %s already exists; skipping re-setup", entry.entry_id)
+    if (
+        entry.entry_id in hass.data[DOMAIN]
+        and "core" in hass.data[DOMAIN][entry.entry_id]
+    ):
+        _LOGGER.debug(
+            "Core for entry %s already exists; skipping re-setup", entry.entry_id
+        )
         # Still attempt to forward setups to ensure platforms are initialized
         try:
             await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
@@ -72,7 +76,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # causes storage/registry initialization to fail. Detect that and avoid
     # adding the entity in that case; store the core reference so adapters
     # can still find it.
-    should_add = hasattr(hass, "config") and getattr(hass.config, "config_dir", None) is not None
+    should_add = (
+        hasattr(hass, "config") and getattr(hass.config, "config_dir", None) is not None
+    )
     if should_add:
         await component.async_add_entities([core_entity])
         hass.data[DOMAIN][entry.entry_id]["core"] = core_entity
@@ -115,9 +121,15 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 try:
                     cancel()
                 except Exception:
-                    _LOGGER.debug("Error cancelling core timers for %s", entry.entry_id, exc_info=True)
+                    _LOGGER.debug(
+                        "Error cancelling core timers for %s",
+                        entry.entry_id,
+                        exc_info=True,
+                    )
     except Exception:
-        _LOGGER.debug("Error while attempting to cancel timers during unload", exc_info=True)
+        _LOGGER.debug(
+            "Error while attempting to cancel timers during unload", exc_info=True
+        )
 
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 

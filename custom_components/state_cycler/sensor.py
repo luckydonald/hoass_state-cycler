@@ -31,7 +31,9 @@ _LOGGER = logging.getLogger(LOG_NAME)
 _LOGGER.warning(f"Loaded State Cycler's `{__name__}` module.")
 
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities) -> None:
+async def async_setup_entry(
+    hass: HomeAssistant, entry: ConfigEntry, async_add_entities
+) -> None:
     """Set up both sensor adapters for a State Cycler entry."""
     raw = StateCyclerRawSensor(hass, entry)
     friendly = StateCyclerFriendlySensor(hass, entry)
@@ -115,7 +117,9 @@ class StateCyclerRawSensor(SensorEntity):
     async def async_added_to_hass(self) -> None:
         await super().async_added_to_hass()
         try:
-            async_dispatcher_connect(self.hass, SIGNAL_UPDATE, self._async_update_from_dispatcher)
+            async_dispatcher_connect(
+                self.hass, SIGNAL_UPDATE, self._async_update_from_dispatcher
+            )
         except Exception:
             pass
 
@@ -195,7 +199,9 @@ class StateCyclerFriendlySensor(SensorEntity):
     async def async_added_to_hass(self) -> None:
         await super().async_added_to_hass()
         try:
-            async_dispatcher_connect(self.hass, SIGNAL_UPDATE, self._async_update_from_dispatcher)
+            async_dispatcher_connect(
+                self.hass, SIGNAL_UPDATE, self._async_update_from_dispatcher
+            )
         except Exception:
             pass
 

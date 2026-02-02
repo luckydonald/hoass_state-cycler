@@ -17,12 +17,21 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 
-from .const import DOMAIN, LOG_NAME, SIGNAL_UPDATE, ATTR_STATES, ATTR_INDEX, ATTR_INCLUDE_OFF_STATE
+from .const import (
+    DOMAIN,
+    LOG_NAME,
+    SIGNAL_UPDATE,
+    ATTR_STATES,
+    ATTR_INDEX,
+    ATTR_INCLUDE_OFF_STATE,
+)
 
 _LOGGER = logging.getLogger(LOG_NAME)
 
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities) -> None:
+async def async_setup_entry(
+    hass: HomeAssistant, entry: ConfigEntry, async_add_entities
+) -> None:
     """Set up select adapter for a State Cycler config entry."""
     # Create and add the adapter entity
     adapter = StateCyclerSelect(hass, entry)
@@ -56,7 +65,9 @@ class StateCyclerSelect(SelectEntity):
         """When entity is added to hass, connect dispatcher and sync state."""
         await super().async_added_to_hass()
         try:
-            async_dispatcher_connect(self.hass, SIGNAL_UPDATE, self._async_update_from_dispatcher)
+            async_dispatcher_connect(
+                self.hass, SIGNAL_UPDATE, self._async_update_from_dispatcher
+            )
         except Exception:
             pass
 
@@ -84,7 +95,9 @@ class StateCyclerSelect(SelectEntity):
     def current_option(self) -> str | None:
         # If internal current option isn't set, try to compute from core snapshot
         if self._current_option is None:
-            core = self.hass.data.get(DOMAIN, {}).get(self._entry.entry_id, {}).get("core")
+            core = (
+                self.hass.data.get(DOMAIN, {}).get(self._entry.entry_id, {}).get("core")
+            )
             if core:
                 snap = core.get_state_snapshot()
                 idx = snap.get(ATTR_INDEX, -1)
@@ -113,7 +126,6 @@ class StateCyclerSelect(SelectEntity):
                     return "Off"
                 if idx == -1:
                     return None
-                offset = 1 if include_off else 0
                 try:
                     return display_names[idx]
                 except Exception:

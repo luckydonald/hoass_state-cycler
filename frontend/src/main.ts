@@ -2,12 +2,13 @@ import {
   createApp,
   h,
 } from 'vue';
+
+import StateCyclerCard from './StateCyclerCard.vue';
+
 import type {
   App,
   ComponentPublicInstance,
 } from 'vue';
-
-import StateCyclerCard from './StateCyclerCard.vue';
 
 import type {
   CardConfig,

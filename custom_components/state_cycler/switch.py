@@ -40,7 +40,9 @@ class StateCyclerSwitch(SwitchEntity):
     async def async_added_to_hass(self) -> None:
         await super().async_added_to_hass()
         try:
-            async_dispatcher_connect(self.hass, SIGNAL_UPDATE, self._async_update_from_dispatcher)
+            async_dispatcher_connect(
+                self.hass, SIGNAL_UPDATE, self._async_update_from_dispatcher
+            )
         except Exception:
             pass
 
@@ -120,7 +122,9 @@ class StateCyclerSwitch(SwitchEntity):
                 try:
                     self._async_update_from_core(snap)
                 except Exception:
-                    _LOGGER.debug("Failed to schedule dispatcher update for switch", exc_info=True)
+                    _LOGGER.debug(
+                        "Failed to schedule dispatcher update for switch", exc_info=True
+                    )
 
     def _async_update_from_core(self, snapshot: dict[str, Any]) -> None:
         idx = snapshot.get(ATTR_INDEX, -1)

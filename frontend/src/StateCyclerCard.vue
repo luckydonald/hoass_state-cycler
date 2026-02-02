@@ -82,10 +82,15 @@ async function cycle() {
 <template>
   <ha-card>
     <div class="card-header">
-      <div class="name">{{ cardTitle }}</div>
+      <div class="name">
+        {{ cardTitle }}
+      </div>
     </div>
     <div class="card-content">
-      <div v-if="entity" class="state-info">
+      <div
+        v-if="entity"
+        class="state-info"
+      >
         <div class="current-state">
           <span class="label">Current:</span>
           <span class="value">{{ currentStateFriendly }}</span>
@@ -100,26 +105,48 @@ async function cycle() {
           <span class="value">{{ includeOffState ? 'Yes' : 'No' }}</span>
         </div>
       </div>
-      <div v-else class="no-entity">
+      <div
+        v-else
+        class="no-entity"
+      >
         <p>No State Cycler entity configured or found.</p>
       </div>
 
-      <div v-if="entity" class="buttons">
-        <ha-button @click="toggle" :disabled="!entity">
+      <div
+        v-if="entity"
+        class="buttons"
+      >
+        <ha-button
+          :disabled="!entity"
+          @click="toggle"
+        >
           {{ isOff ? 'Turn On' : 'Turn Off' }}
         </ha-button>
-        <ha-button @click="next" :disabled="!entity">
+        <ha-button
+          :disabled="!entity"
+          @click="next"
+        >
           Next
         </ha-button>
-        <ha-button @click="cycle" :disabled="!entity">
+        <ha-button
+          :disabled="!entity"
+          @click="cycle"
+        >
           Cycle
         </ha-button>
       </div>
 
-      <div v-if="states.length > 0" class="states-list">
+      <div
+        v-if="states.length > 0"
+        class="states-list"
+      >
         <h4>States:</h4>
         <ul>
-          <li v-for="(state, idx) in states" :key="state" :class="{ active: idx === currentIndex }">
+          <li
+            v-for="(state, idx) in states"
+            :key="state"
+            :class="{ active: idx === currentIndex }"
+          >
             {{ state }}
           </li>
         </ul>

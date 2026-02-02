@@ -13,7 +13,7 @@ from homeassistant.const import (
     STATE_UNAVAILABLE,
     STATE_UNKNOWN,
 )
-from homeassistant.core import HomeAssistant, ServiceCall, callback
+from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -220,7 +220,9 @@ class StateCyclerEntity(RestoreEntity, Entity):
                 upd(snapshot)
         except Exception:
             # Best-effort; don't let adapter registration fail tests
-            _LOGGER.debug("Adapter %s registration initial sync failed", name, exc_info=True)
+            _LOGGER.debug(
+                "Adapter %s registration initial sync failed", name, exc_info=True
+            )
 
     def get_state_snapshot(self) -> dict[str, Any]:
         """Return a serializable snapshot of the core state for adapters."""
@@ -388,7 +390,9 @@ class StateCyclerEntity(RestoreEntity, Entity):
         if saved_state:
             try:
                 # Check service availability first to avoid ServiceNotFound in test envs
-                if self.hass.services and self.hass.services.has_service(domain, "turn_on"):
+                if self.hass.services and self.hass.services.has_service(
+                    domain, "turn_on"
+                ):
                     if saved_state["state"] == "on":
                         await self.hass.services.async_call(
                             domain,
@@ -443,7 +447,9 @@ class StateCyclerEntity(RestoreEntity, Entity):
 
         if domain != "scene":  # Scenes can't be turned off
             try:
-                if self.hass.services and self.hass.services.has_service(domain, SERVICE_TURN_OFF):
+                if self.hass.services and self.hass.services.has_service(
+                    domain, SERVICE_TURN_OFF
+                ):
                     await self.hass.services.async_call(
                         domain,
                         SERVICE_TURN_OFF,
@@ -669,7 +675,9 @@ class StateCyclerEntity(RestoreEntity, Entity):
                         except Exception:
                             pass
         except Exception:
-            _LOGGER.debug("Error while resetting cycle timer cancel function", exc_info=True)
+            _LOGGER.debug(
+                "Error while resetting cycle timer cancel function", exc_info=True
+            )
 
         if self._timer_interval:
             # call_later returns a TimerHandle; store a cancel callable for consistent cancelation
@@ -777,7 +785,11 @@ class StateCyclerEntity(RestoreEntity, Entity):
         """
         # Only write HA state if entity has been added to hass/platform and is
         # not running in a lightweight test environment.
-        if not self._lightweight and self._platform_added and getattr(self, "platform", None) is not None:
+        if (
+            not self._lightweight
+            and self._platform_added
+            and getattr(self, "platform", None) is not None
+        ):
             try:
                 self.async_write_ha_state()
             except Exception:
@@ -813,19 +825,25 @@ class StateCyclerEntity(RestoreEntity, Entity):
                         try:
                             upd(snapshot)
                         except Exception:
-                            _LOGGER.debug("Adapter update failed for %s", name, exc_info=True)
+                            _LOGGER.debug(
+                                "Adapter update failed for %s", name, exc_info=True
+                            )
                 # If adapter looks like a Select adapter but didn't update its
                 # current option, compute and set it as a fallback. This helps
                 # unit tests where adapter implementations may skip writes.
                 try:
-                    if getattr(adapter, "_current_option", None) is None and hasattr(adapter, "_options"):
+                    if getattr(adapter, "_current_option", None) is None and hasattr(
+                        adapter, "_options"
+                    ):
                         states = snapshot.get(ATTR_STATES, [])
                         include_off = snapshot.get(ATTR_INCLUDE_OFF_STATE, False)
                         friendly_names = []
                         for ent in states:
                             state_obj = self.hass.states.get(ent)
                             if state_obj:
-                                friendly = state_obj.attributes.get("friendly_name", ent)
+                                friendly = state_obj.attributes.get(
+                                    "friendly_name", ent
+                                )
                             else:
                                 friendly = ent
                             friendly_names.append(friendly)
@@ -844,12 +862,13 @@ class StateCyclerEntity(RestoreEntity, Entity):
                             curr = "Off" if include_off else None
                         else:
                             if 0 <= (idx + offset) < len(display_names) + offset:
-                                curr = ( [None] * offset + display_names )[idx + offset]
+                                curr = ([None] * offset + display_names)[idx + offset]
                             else:
                                 curr = None
                         adapter._current_option = curr
                 except Exception:
                     pass
             except Exception:
-                _LOGGER.debug("Direct adapter update failed for %s", name, exc_info=True)
-
+                _LOGGER.debug(
+                    "Direct adapter update failed for %s", name, exc_info=True
+                )
