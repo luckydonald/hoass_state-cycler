@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 describe('Example utility tests', () => {
   it('should demonstrate basic test structure', () => {
@@ -16,4 +16,3 @@ describe('Example utility tests', () => {
     expect(formatted).toContain('2024-01-01');
   });
 });
-

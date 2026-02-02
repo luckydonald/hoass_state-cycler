@@ -1,5 +1,5 @@
-import { beforeAll, afterEach } from 'vitest';
 import { cleanup } from '@vue/test-utils';
+import { afterEach, beforeAll } from 'vitest';
 
 // Setup function that runs before all tests
 beforeAll(() => {
@@ -16,11 +16,10 @@ afterEach(() => {
 global.customElements = {
   define: () => {},
   get: () => undefined,
-  whenDefined: () => Promise.resolve(),
-} as any;
+  whenDefined: async () => Promise.resolve(),
+} as unknown as CustomElementRegistry;
 
 // Mock window.customCards
-(global as any).window = {
+(global as unknown).window = {
   customCards: [],
 };
-

@@ -1,10 +1,24 @@
 """Constants for the State Cycler integration."""
 
+import json
 from typing import Final
 import logging
+from pathlib import Path
+
+from homeassistant.loader import Manifest
 
 DOMAIN: Final = "state_cycler"
 # Use hyphenated name to match test expectations
+
+DIR = Path(__file__).parent
+MANIFEST_FILE = DIR / "manifest.json"
+
+with open(MANIFEST_FILE) as f:
+    MANIFEST_DATA: Manifest = json.load(f)
+# end if
+
+
+# DOMAIN: Final[str] = MANIFEST_DATA["domain"]
 LOG_NAME: Final[str] = f"custom-components.{DOMAIN}"
 PLATFORMS: Final[list[str]] = [
     "select",

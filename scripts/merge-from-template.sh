@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
 # ============================================================================
-# Home Assistant Plugin Template Update Script
+# Home Assistant Plugin Template Merge Script
 # ============================================================================
 #
-# This script updates a plugin from the template repository by rebasing onto
-# the latest template changes. It handles conflict resolution and provides
-# recovery options.
+# This script updates a plugin from the template repository by merging the
+# template's mane branch into the current branch. It detects template remote, fetches, creates a
+# recovery tag, performs the merge, and helps resolve conflicts with the
+# same automation and guidance as the rebase script.
+# It mirrors the behavior of the rebase update script with that.
 #
 # Usage:
-#   chmod +x scripts/update-from-template.sh
-#   ./scripts/update-from-template.sh
+#   chmod +x scripts/merge-from-template.sh
+#   ./scripts/merge-from-template.sh
 #
 # ============================================================================
 
@@ -113,15 +115,15 @@ detect_template_remote() {
     echo "$template_remote"
 }
 
-# Function to check if rebase is in progress
-is_rebase_in_progress() {
-    [ -d ".git/rebase-apply" ] || [ -d ".git/rebase-merge" ]
+# Function to check if merge is in progress
+is_merge_in_progress() {
+    [ -f ".git/MERGE_HEAD" ] || [ -d ".git/merge-logs" ]
 }
 
-# Function to continue rebase after manual resolution
-continue_rebase() {
-    if ! is_rebase_in_progress; then
-        print_error "No rebase in progress"
+# Function to continue merge after manual resolution
+continue_merge() {
+    if ! is_merge_in_progress; then
+        print_error "No merge in progress"
         return 1
     fi
 
@@ -130,7 +132,6 @@ continue_rebase() {
     local unmerged_files
     unmerged_files=$(git diff --name-only --diff-filter=U 2>/dev/null)
     if [ -n "$unmerged_files" ]; then
-        local needs_manual=true
         for file in $unmerged_files; do
             # Check if file still has conflict markers
             if [ -f "$file" ]; then
@@ -140,56 +141,45 @@ continue_rebase() {
                     git add "$file"
                 else
                     print_error "Conflict still present in $file"
-                    needs_manual=false
-                    break
+                    return 1
                 fi
             fi
         done
-
-        # Re-check after auto-staging
-        unmerged_files=$(git diff --name-only --diff-filter=U 2>/dev/null)
-        if [ -n "$unmerged_files" ]; then
-            print_error "Conflicts are still present in: $unmerged_files"
-            print_error "Please resolve all conflicts and stage the files with 'git add <file>' before continuing."
-            return 1
-        fi
     fi
 
-    print_info "Continuing rebase after manual resolution..."
+    print_info "Continuing merge after manual resolution..."
     # Prepare a non-interactive merge commit message so git won't open an editor.
     # Create or overwrite .git/MERGE_MSG with our composed message (no commented lines).
     # Uncomment merge details in the commit message
-    local message_file=""
-    if [ -d ".git/rebase-merge" ]; then
-        message_file=".git/rebase-merge/message"
-    elif [ -d ".git/rebase-apply" ]; then
-        message_file=".git/rebase-apply/message"
-    fi
+    local message_file=".git/MERGE_MSG"
+    local template_rev
+    template_rev=$(git rev-parse --short "$TEMPLATE_REMOTE/mane" 2>/dev/null || echo "unknown")
 
     if [ -n "$message_file" ] && [ -f "$message_file" ]; then
+        printf "Merge %s/mane into %s\n\n" "$TEMPLATE_REMOTE" "$CURRENT_BRANCH" > "$message_file"
         # Escape # at start of lines to prevent them from being treated as comments
         sed -i 's/^#/\\#/' "$message_file" 2>/dev/null || true
 
         # Add rebase details at the end
         echo "" >> "$message_file"
-        echo "🔄 Template rebase on $(date '+%Y-%m-%d %H:%M:%S') from $CURRENT_BRANCH to $TEMPLATE_REMOTE/mane ($(git rev-parse $TEMPLATE_REMOTE/mane))" >> "$message_file"
+        printf "⛙ Template merge on %s from %s to %s/mane (%s)\n" "$(date '+%Y-%m-%d %H:%M:%S')" "$CURRENT_BRANCH" "$TEMPLATE_REMOTE" "$template_rev" >> "$message_file"
     fi
 
-    # Prevent git from opening editor by setting GIT_EDITOR to true
-    if GIT_EDITOR=true git rebase --continue; then
-        print_success "Rebase continued successfully"
+    # Finalize the merge non-interactively by committing using the prepared message
+    # This avoids opening an editor (some git versions may still prompt on merge --continue).
+    if git commit -F "$message_file"; then
+        print_success "Merge committed successfully"
         return 0
     else
-        print_error "Rebase continue failed"
+        print_error "Merge commit failed"
         return 1
     fi
 }
 
 # Function to handle conflicts
-handle_conflicts_for_rebase() {
+handle_conflicts_for_merge() {
     local conflict_files
     conflict_files=$(git diff --name-only --diff-filter=U)
-    local has_auto_resolvable=true
 
     print_warning "Conflicts detected in:"
     echo "$conflict_files"
@@ -199,32 +189,32 @@ handle_conflicts_for_rebase() {
     # Try simple auto-resolution: accept ours when remote deleted local, or accept theirs when local deleted
     for file in $conflict_files; do
         if [ -f "$file" ]; then
-            # Check if it's a simple case where remote deleted and local kept
-            if git show :3:"$file" >/dev/null 2>&1; then
-                # File exists in both, check if it's just whitespace or simple changes
-                if ! git diff --check :2:"$file" :3:"$file" 2>/dev/null; then
-                    has_auto_resolvable=false
-                    break
-                fi
-            else
-                # Remote deleted the file, local kept it - we can accept ours
+            # If stage 3 (their) missing -> remote deleted? For merge, use git ls-files -u to inspect
+            if ! git show :3:"$file" >/dev/null 2>&1; then
                 print_info "Remote deleted $file, keeping local version"
                 git add "$file"
                 continue
             fi
+            if ! git show :2:"$file" >/dev/null 2>&1; then
+                print_info "Local deleted $file, accepting remote version"
+                git add "$file"
+                continue
+            fi
         else
-            # Local deleted, remote kept - accept theirs
-            print_info "Local deleted $file, accepting remote version"
-            git add "$file"
+            # File not present locally, accept remote
+            print_info "Local missing $file, accepting remote version"
+            git add "$file" || true
             continue
         fi
     done
 
     # If we can auto-stage all, try to continue using our non-interactive continue path
-    if [ "$has_auto_resolvable" = true ]; then
-        print_info "Attempting auto-resolution..."
-        if git add -A && GIT_EDITOR=true git rebase --continue; then
-            print_success "Conflicts auto-resolved"
+    if git diff --name-only --diff-filter=U | grep -q '.'; then
+        print_warning "Some conflicts remain and require manual resolution"
+    else
+        print_info "Attempting to continue merge after auto-staging..."
+        if continue_merge; then
+            print_success "Merge auto-resolved and continued"
             return 0
         fi
     fi
@@ -238,37 +228,37 @@ handle_conflicts_for_rebase() {
     echo "Commands to resolve:"
     echo "  1. Edit the conflicted files"
     echo "  2. Stage resolved files: git add <file>"
-    echo "  3. Continue rebase: git rebase --continue"
-    echo "  4. Or abort: git rebase --abort"
+    echo "  3. Continue merge: git merge --continue (or 'git commit' if 'merge --continue' not available)"
+    echo "  4. Or abort: git merge --abort"
     echo ""
-    echo "Tip: JetBrains IDEs (IntelliJ, PyCharm, etc.) have excellent Git rebase conflict resolution tools"
+    echo "Tip: JetBrains IDEs (IntelliJ, PyCharm, etc.) have excellent Git merge conflict resolution tools"
     echo "     Look for 'Resolve Conflicts' in the Git tool window"
     echo ""
     read -p "Press Enter after resolving conflicts manually, or 'a' to abort: " response
 
     if [ "$response" = "a" ]; then
-        git rebase --abort
-        print_warning "Rebase aborted"
+        git merge --abort
+        print_warning "Merge aborted"
         exit 1
     fi
 
     # Allow retries if conflicts aren't fully resolved
     while true; do
-        if continue_rebase; then
+        if continue_merge; then
             break
         fi
         echo ""
         read -p "Press Enter to try again after resolving remaining conflicts, or 'a' to abort: " retry_response
         if [ "$retry_response" = "a" ]; then
-            git rebase --abort
-            print_warning "Rebase aborted"
+            git merge --abort
+            print_warning "Merge aborted"
             exit 1
         fi
     done
 }
 
 # Main script
-print_header "Home Assistant Plugin Template Update"
+print_header "Home Assistant Plugin Template Merge"
 
 # Check if we're in a git repository
 if [ ! -d ".git" ]; then
@@ -288,18 +278,18 @@ if [ -n "$(git status --porcelain)" ]; then
     fi
 fi
 
-# Check if rebase is already in progress, try to continue
-if is_rebase_in_progress; then
-    print_info "Rebase already in progress, attempting to continue..."
-    if continue_rebase; then
-        print_success "Rebase completed"
+# Check if merge is already in progress, try to continue
+if is_merge_in_progress; then
+    print_info "Merge already in progress, attempting to continue..."
+    if continue_merge; then
+        print_success "Merge completed"
         # Show summary
-        print_header "Rebase Summary"
-        echo "Files changed during rebase:"
+        print_header "Merge Summary"
+        echo "Files changed during merge:"
         git diff --name-only HEAD~1
         exit 0
     else
-        print_error "Failed to continue rebase"
+        print_error "Failed to continue merge"
         exit 1
     fi
 fi
@@ -311,7 +301,7 @@ if [ -n "$TEMPLATE_REMOTE" ]; then
     print_success "Using template remote: $TEMPLATE_REMOTE ($remote_url)"
 
     # Check if URL is a local path
-    if [[ "$remote_url" =~ ^(\.\./|\./|/|[A-Za-z]:) ]]; then
+    if [[ "$remote_url" =~ ^(\./|\.\./|/|[A-Za-z]:) ]]; then
         print_warning "Remote '$TEMPLATE_REMOTE' points to a local path '$remote_url', not a git URL."
         print_info "This may cause fetch to fail. Consider setting it to the proper git URL:"
         echo "  git remote set-url $TEMPLATE_REMOTE https://github.com/luckydonald/hoass_plugin-template.git"
@@ -335,7 +325,7 @@ fi
 print_success "Fetched latest changes"
 
 # Create recovery tag
-RECOVERY_TAG="template-rebase-backup_$(get_timestamp)"
+RECOVERY_TAG="template-merge-backup_$(get_timestamp)"
 print_info "Creating recovery tag: $RECOVERY_TAG"
 git tag "$RECOVERY_TAG"
 print_success "Recovery tag created"
@@ -347,21 +337,21 @@ if [ -z "$CURRENT_BRANCH" ]; then
     exit 1
 fi
 
-# Start rebase onto mane
-print_info "Starting rebase of $CURRENT_BRANCH onto $TEMPLATE_REMOTE/mane..."
-if git rebase "$TEMPLATE_REMOTE/mane"; then
-    print_success "Rebase completed successfully"
+# Perform merge
+print_info "Merging $TEMPLATE_REMOTE/mane into $CURRENT_BRANCH..."
+if git merge --no-edit "$TEMPLATE_REMOTE/mane"; then
+    print_success "Merge completed successfully"
 else
     # Handle conflicts
-    handle_conflicts_for_rebase
+    handle_conflicts_for_merge
 fi
 
 # Show summary of changed files
-print_header "Rebase Summary"
-echo "Files changed during rebase:"
+print_header "Merge Summary"
+echo "Files changed during merge:"
 git diff --name-only "$RECOVERY_TAG"..HEAD
 
-print_success "Template update completed!"
+print_success "Template merge completed!"
 echo ""
 echo "Recovery tag: $RECOVERY_TAG"
 echo "To undo: git reset --hard $RECOVERY_TAG"

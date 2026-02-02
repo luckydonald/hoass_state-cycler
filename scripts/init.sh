@@ -58,6 +58,32 @@ print_success() {
     echo -e "${GREEN}✓${NC} $1"
 }
 
+# Prompt helper: read from terminal if available, otherwise fall back to default
+# Usage: result=$(prompt_default "Prompt text" "default")
+prompt_default() {
+    local prompt="$1"
+    local default="$2"
+    local ans=""
+
+    # Prefer reading from /dev/tty so we don't consume process-substitution stdin
+    if [ -e /dev/tty ] && [ -r /dev/tty ]; then
+        # shellcheck disable=SC2034
+        if read -r -p "$prompt" ans </dev/tty; then :; else ans="$default"; fi
+    elif [ -t 0 ]; then
+        # fallback: stdin is a TTY
+        if read -r -p "$prompt" ans; then :; else ans="$default"; fi
+    else
+        # Non-interactive: use default
+        ans="$default"
+    fi
+
+    # Apply default when empty
+    if [ -z "$ans" ]; then
+        ans="$default"
+    fi
+    echo "$ans"
+}
+
 # Function to convert string to lowercase-dash format
 to_lowercase_dash() {
     echo "$1" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g' | sed 's/--*/-/g' | sed 's/^-//' | sed 's/-$//'
@@ -280,21 +306,46 @@ fi
 
 print_info "Working directory: $REPO_ROOT"
 
+# Load existing project settings if available (pre-fill prompts)
+SETTINGS_LOADED=false
+if [ -f "scripts/get_project_settings.py" ]; then
+    if python3 scripts/get_project_settings.py >/dev/null 2>&1; then
+        print_info "Found existing project settings (scripts/init.json), pre-filling prompts"
+        # This script prints export VAR=... lines; eval them into the environment
+        eval "$(python3 scripts/get_project_settings.py)"
+        SETTINGS_LOADED=true
+    else
+        print_info "scripts/get_project_settings.py found but could not load scripts/init.json (it may be missing or invalid)"
+    fi
+fi
+
 # Step 1: Get the display name (UI name)
 print_info "Step 1: Plugin Display Name"
 echo "This is the name that will be shown in the Home Assistant UI."
 
-# Try to deduce name from folder
-FOLDER_DEFAULT=$(extract_plugin_name_from_folder)
+# Try to deduce name from folder or existing settings
+if [ -n "${DISPLAY_NAME:-}" ]; then
+    # When DISPLAY_NAME is already set from previous init.json, use it as the prompt default
+    FOLDER_DEFAULT="$DISPLAY_NAME"
+else
+    FOLDER_DEFAULT=$(extract_plugin_name_from_folder)
+fi
+
 if [ -n "$FOLDER_DEFAULT" ]; then
     echo "Example: 'My Custom Widget'"
     echo ""
-    read -p "Enter plugin display name [$FOLDER_DEFAULT]: " DISPLAY_NAME
-    DISPLAY_NAME=${DISPLAY_NAME:-$FOLDER_DEFAULT}
+    # Read into a temporary variable so we don't overwrite an already loaded DISPLAY_NAME when the user presses Enter
+    read -p "Enter plugin display name [$FOLDER_DEFAULT]: " INPUT_DISPLAY_NAME
+    if [ -n "$INPUT_DISPLAY_NAME" ]; then
+        DISPLAY_NAME="$INPUT_DISPLAY_NAME"
+    else
+        DISPLAY_NAME=${DISPLAY_NAME:-$FOLDER_DEFAULT}
+    fi
 else
     echo "Example: 'My Custom Widget'"
     echo ""
-    read -p "Enter plugin display name: " DISPLAY_NAME
+    read -p "Enter plugin display name: " INPUT_DISPLAY_NAME
+    DISPLAY_NAME=${INPUT_DISPLAY_NAME}
 fi
 
 if [ -z "$DISPLAY_NAME" ]; then
@@ -308,10 +359,15 @@ print_success "Display name: $DISPLAY_NAME"
 print_info "\nStep 2: Lowercase-Dash Name"
 echo "This is used for custom component names and filenames."
 echo "Example: 'my-custom-widget' (for <my-custom-widget-card>, my-custom-widget-card.js, etc.)"
+# Compute default from display name, but respect existing DASH_NAME loaded from settings
 DEFAULT_DASH=$(to_lowercase_dash "$DISPLAY_NAME")
 echo ""
-read -p "Enter lowercase-dash name [$DEFAULT_DASH]: " DASH_NAME
-DASH_NAME=${DASH_NAME:-$DEFAULT_DASH}
+read -p "Enter lowercase-dash name [$DEFAULT_DASH]: " INPUT_DASH
+if [ -n "$INPUT_DASH" ]; then
+    DASH_NAME="$INPUT_DASH"
+else
+    DASH_NAME=${DASH_NAME:-$DEFAULT_DASH}
+fi
 
 print_success "Lowercase-dash name: $DASH_NAME"
 
@@ -319,10 +375,15 @@ print_success "Lowercase-dash name: $DASH_NAME"
 print_info "\nStep 3: Snake_Case Name"
 echo "This is used for Python module names, integration domain, sensor names, etc."
 echo "Example: 'my_custom_widget'"
+# Compute default from dash name, but respect existing SNAKE_NAME loaded from settings
 DEFAULT_SNAKE=$(to_snake_case "$DASH_NAME")
 echo ""
-read -p "Enter snake_case name [$DEFAULT_SNAKE]: " SNAKE_NAME
-SNAKE_NAME=${SNAKE_NAME:-$DEFAULT_SNAKE}
+read -p "Enter snake_case name [$DEFAULT_SNAKE]: " INPUT_SNAKE
+if [ -n "$INPUT_SNAKE" ]; then
+    SNAKE_NAME="$INPUT_SNAKE"
+else
+    SNAKE_NAME=${SNAKE_NAME:-$DEFAULT_SNAKE}
+fi
 
 print_success "Snake_case name: $SNAKE_NAME"
 
@@ -330,8 +391,8 @@ print_success "Snake_case name: $SNAKE_NAME"
 print_info "\nStep 4: GitHub Username"
 echo "This is your GitHub username for the repository URL."
 echo ""
-read -p "Enter GitHub username [luckydonald]: " GITHUB_USER
-GITHUB_USER=${GITHUB_USER:-luckydonald}
+read -p "Enter GitHub username [luckydonald]: " INPUT_GITHUB
+GITHUB_USER=${INPUT_GITHUB:-${GITHUB_USER:-luckydonald}}
 
 print_success "GitHub username: $GITHUB_USER"
 
@@ -727,25 +788,68 @@ setup_readme_files
 if [ -d "custom_components/plugin_template" ]; then
     if [ -d "custom_components/$SNAKE_NAME" ]; then
         print_warning "custom_components/$SNAKE_NAME/ already exists"
-        print_info "Merging template files into existing directory..."
 
-        # Copy new files from plugin_template to existing directory
-        while IFS= read -r -d '' file; do
-            rel_path="${file#custom_components/plugin_template/}"
-            dest_file="custom_components/$SNAKE_NAME/$rel_path"
+        # Ask user whether to merge new template files into the existing directory,
+        # backup & replace the existing directory with the template, or skip.
+        print_info "Choose how to handle the existing directory:"
+        echo "  m - merge new files into existing directory (default)"
+        echo "  r - move existing directory to a date-stamped backup and replace with template"
+        echo "  s - skip (leave both directories as-is)"
+        ACTION=$(prompt_default "Action (m/r/s) [m]: " "m")
 
-            if [ ! -f "$dest_file" ]; then
-                read -p "Copy new file $rel_path? (y/n) [y]: " COPY_NEW
-                COPY_NEW=${COPY_NEW:-y}
-                if [[ "$COPY_NEW" =~ ^[Yy]$ ]]; then
-                    mkdir -p "$(dirname "$dest_file")"
-                    cp "$file" "$dest_file"
-                    print_success "Copied: $rel_path"
+        if [[ "$ACTION" =~ ^[Rr]$ ]]; then
+            # Backup-and-replace: move existing to .YYYY-MM-DD.bak (avoid collisions)
+            DATE_STAMP=$(date +%F)
+            BACKUP_BASE="custom_components/${SNAKE_NAME}.${DATE_STAMP}.bak"
+            BACKUP_PATH="$BACKUP_BASE"
+            i=1
+            while [ -e "$BACKUP_PATH" ]; do
+                BACKUP_PATH="${BACKUP_BASE}.${i}"
+                i=$((i+1))
+            done
+
+            print_info "Moving existing directory to: $BACKUP_PATH"
+            mv "custom_components/$SNAKE_NAME" "$BACKUP_PATH"
+            if [ $? -ne 0 ]; then
+                print_error "Failed to move existing directory to $BACKUP_PATH"
+                print_info "Aborting replace operation"
+            else
+                # Now move the template into place
+                mv "custom_components/plugin_template" "custom_components/$SNAKE_NAME"
+                if [ $? -eq 0 ]; then
+                    print_success "Replaced custom_components/$SNAKE_NAME with template (backup at $BACKUP_PATH)"
+                else
+                    print_error "Failed to move plugin_template into place; attempt to roll back"
+                    # Try to restore backup
+                    if [ ! -d "custom_components/$SNAKE_NAME" ] && [ -d "$BACKUP_PATH" ]; then
+                        mv "$BACKUP_PATH" "custom_components/$SNAKE_NAME" || true
+                        print_info "Restored original to custom_components/$SNAKE_NAME"
+                    fi
                 fi
             fi
-        done < <(find "custom_components/plugin_template" -type f -print0)
 
-        rm -rf "custom_components/plugin_template"
+        elif [[ "$ACTION" =~ ^[Ss]$ ]]; then
+            print_info "Skipping merge/replace for custom_components/$SNAKE_NAME. Leaving plugin_template/ in place."
+
+        else
+            # Default: merge new files from plugin_template to existing directory
+            print_info "Merging template files into existing directory..."
+            while IFS= read -r -d '' file; do
+                rel_path="${file#custom_components/plugin_template/}"
+                dest_file="custom_components/$SNAKE_NAME/$rel_path"
+
+                if [ ! -f "$dest_file" ]; then
+                    COPY_NEW=$(prompt_default "Copy new file $rel_path? (y/n) [y]: " "y")
+                    if [[ "$COPY_NEW" =~ ^[Yy]$ ]]; then
+                        mkdir -p "$(dirname "$dest_file")"
+                        cp "$file" "$dest_file"
+                        print_success "Copied: $rel_path"
+                    fi
+                fi
+            done < <(find "custom_components/plugin_template" -type f -print0)
+
+            rm -rf "custom_components/plugin_template"
+        fi
     else
         print_info "Renaming custom_components/plugin_template/ to custom_components/$SNAKE_NAME/"
         mv "custom_components/plugin_template" "custom_components/$SNAKE_NAME"
@@ -844,7 +948,11 @@ cat > "scripts/init.json" << EOF
   "github_url": "$GITHUB_URL",
   "keep_backend": $KEEP_BACKEND,
   "frontend_choice": "$FRONTEND_CHOICE",
-  "current_year": $(date +%Y)
+  "current_year": $(date +%Y),
+  "replacements": {
+    "": ""
+  },
+  "": ""
 }
 EOF
 print_success "Project settings saved"

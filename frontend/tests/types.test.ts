@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import type { HomeAssistant, CardConfig, HassEntity } from '../src/types';
+import { describe, expect, it } from 'vitest';
+
+import type { CardConfig, HassEntity, HomeAssistant } from '../src/types';
 
 describe('Type Definitions', () => {
   describe('HassEntity', () => {
@@ -55,4 +56,3 @@ describe('Type Definitions', () => {
     });
   });
 });
-

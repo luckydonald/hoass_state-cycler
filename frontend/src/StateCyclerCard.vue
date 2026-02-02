@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import {
   computed,
+  onMounted,
+  onUnmounted,
   ref,
 } from 'vue';
 import type {
@@ -14,6 +16,23 @@ const props = defineProps<{
   hass: HomeAssistant | null;
   config: CardConfig;
 }>();
+
+// State
+const currentTime = ref(new Date());
+let timeInterval: ReturnType<typeof setInterval> | null = null;
+
+// Lifecycle
+onMounted(() => {
+  timeInterval = setInterval(() => {
+    currentTime.value = new Date();
+  }, 1000);
+});
+
+onUnmounted(() => {
+  if (timeInterval) {
+    clearInterval(timeInterval);
+  }
+});
 
 // Computed
 const cardTitle = computed(() => props.config.title || 'State Cycler');
@@ -109,7 +128,7 @@ async function cycle() {
   </ha-card>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 ha-card {
   padding: 16px;
 }

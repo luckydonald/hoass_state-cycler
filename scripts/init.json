@@ -7,5 +7,9 @@
   "github_url": "https://github.com/luckydonald/hoass_state-cycler.git",
   "keep_backend": true,
   "frontend_choice": "vue",
-  "current_year": 2026
+  "current_year": 2026,
+  "replacements": {
+    "": ""
+  },
+  "": ""
 }

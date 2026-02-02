@@ -1,7 +1,10 @@
-import { defineConfig } from 'vitest/config';
+/** eslint-disable */
+
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import vue from '@vitejs/plugin-vue';
-import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { defineConfig } from 'vitest/config';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -18,10 +21,16 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
-    setupFiles: ['./tests/setup.ts'],
+    setupFiles: [
+      './tests/setup.ts',
+    ],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      reporter: [
+        'text',
+        'json',
+        'html',
+      ],
       exclude: [
         'node_modules/',
         'tests/',
@@ -36,4 +45,3 @@ export default defineConfig({
     },
   },
 });
-

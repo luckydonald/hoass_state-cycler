@@ -1,7 +1,15 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
+import {
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
+
 import StateCyclerCard from '../src/StateCyclerCard.vue';
 import type { HomeAssistant, CardConfig, StateCyclerEntity } from '../src/types';
+
 
 describe('StateCyclerCard', () => {
   let mockHass: HomeAssistant;
@@ -65,7 +73,6 @@ describe('StateCyclerCard', () => {
     const wrapper = mount(StateCyclerCard, {
       props: {
         hass: mockHass,
-        config: { entity: 'state_cycler.test' },
       },
     });
 
@@ -100,6 +107,12 @@ describe('StateCyclerCard', () => {
     expect(buttons[1].text()).toContain('Next');
     expect(buttons[2].text()).toContain('Cycle');
   });
+
+  it('displays entity state when entity is configured', () => {
+    const configWithEntity: CardConfig = {
+      ...mockConfig,
+      entity: 'sensor.test',
+    };
 
   it('calls switch service on toggle button click', async () => {
     const wrapper = mount(StateCyclerCard, {

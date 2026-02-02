@@ -3,12 +3,12 @@
   "name": "State Cycler",
   "codeowners": ["@luckydonald", "@luckylucy"],
   "config_flow": true,
-  "dependencies": [],
+  "dependencies": ["lovelace"],
   "documentation": "https://github.com/luckydonald/hoass_state-cycler",
   "integration_type": "entity",
   "iot_class": "calculated",
   "issue_tracker": "https://github.com/luckydonald/hoass_state-cycler/issues",
-  "platforms": ["select", "switch", "button", "sensor"],
   "requirements": [],
   "version": "0.0.0-pre8"
 }
+

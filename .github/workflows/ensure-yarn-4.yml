@@ -1,0 +1,26 @@
+name: Ensure Yarn 4
+
+on: [pull_request]
+
+jobs:
+  check-yarn-4:
+    runs-on: ubuntu-latest
+    name: Check Yarn 4 availability
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Enable Corepack and activate package manager (from package.json)
+        run: |
+          chmod +x ./scripts/ensure_yarn.sh || true
+          ./scripts/ensure_yarn.sh
+
+      - name: Install dependencies (immutable)
+        run: yarn install --immutable
+        env:
+          CI: true

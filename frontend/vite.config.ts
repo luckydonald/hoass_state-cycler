@@ -1,7 +1,8 @@
-import { defineConfig } from 'vite';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import vue from '@vitejs/plugin-vue';
-import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { defineConfig } from 'vite';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -29,7 +30,9 @@ export default defineConfig({
       entry: resolve(__dirname, 'src/main.ts'),
       name: 'StateCyclerCard',
       fileName: () => 'state-cycler-card.js',
-      formats: ['iife'],
+      formats: [
+        'iife',
+      ],
     },
     outDir: '../custom_components/state_cycler/www',
     emptyOutDir: false,
@@ -41,4 +44,3 @@ export default defineConfig({
     },
   },
 });
-

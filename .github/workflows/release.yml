@@ -21,9 +21,21 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Enable Corepack and activate package manager (from package.json)
+        run: |
+          chmod +x ./scripts/ensure_yarn.sh || true
+          ./scripts/ensure_yarn.sh
+
       - name: Install dependencies
         working-directory: frontend
-        run: yarn install
+        run: |
+          if [ -f yarn.lock ] || [ -f .yarn/lock.yml ]; then
+            echo "Lockfile found, running yarn install --immutable"
+            yarn install --immutable
+          else
+            echo "No lockfile present, running regular yarn install"
+            yarn install
+          fi
 
       - name: Build frontend
         working-directory: frontend

@@ -1,4 +1,4 @@
-"""Sensor adapters for State Cycler.
+"""Sensor platform for State Cycler.
 
 We provide two sensors per config entry:
 - raw sensor: primary state is the underlying entity_id or 'off' (machine-friendly)
@@ -150,6 +150,7 @@ class StateCyclerFriendlySensor(SensorEntity):
 
     @property
     def device_info(self) -> DeviceInfo:
+        """Return device info."""
         return DeviceInfo(
             identifiers={(DOMAIN, self._entry.entry_id)},
             name=self._name,
