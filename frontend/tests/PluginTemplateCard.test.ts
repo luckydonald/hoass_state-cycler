@@ -42,10 +42,11 @@ describe('StateCyclerCard', () => {
       },
     };
 
+    const statesObj: Record<string, unknown> = {};
+    statesObj['state_cycler.test'] = mockEntity;
+
     mockHass = {
-      states: {
-        ['state_cycler.test']: mockEntity,
-      },
+      states: statesObj,
       services: {},
       user: {
         id: 'test-user',
