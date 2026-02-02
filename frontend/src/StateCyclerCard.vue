@@ -14,7 +14,7 @@ import type {
 // Props
 const props = defineProps<{
   hass: HomeAssistant | null;
-  config: CardConfig;
+  config?: CardConfig;
 }>();
 
 // State
@@ -35,10 +35,10 @@ onUnmounted(() => {
 });
 
 // Computed
-const cardTitle = computed(() => props.config.title || 'State Cycler');
+const cardTitle = computed(() => props.config?.title || 'State Cycler');
 
 const entity = computed((): StateCyclerEntity | null => {
-  if (!props.hass || !props.config.entity) return null;
+  if (!props.hass || !props.config?.entity) return null;
   const ent = props.hass.states[props.config.entity];
   if (!ent || !ent.entity_id.startsWith('state_cycler.')) return null;
   return ent as StateCyclerEntity;
@@ -56,7 +56,7 @@ const states = computed(() => entity.value?.attributes.states || []);
 
 // Helper to call service
 async function callService(service: string, data: Record<string, unknown> = {}) {
-  if (!props.hass || !props.config.entity) return;
+  if (!props.hass || !props.config?.entity) return;
   await props.hass.callService('state_cycler', service, {
     ...data,
     entity_id: props.config.entity,
