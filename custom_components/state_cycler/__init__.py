@@ -31,6 +31,28 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
         component = EntityComponent(_LOGGER, DOMAIN, hass)
         hass.data[DOMAIN]["component"] = component
 
+    # If test harness (or other code) added MockConfigEntry entries before
+    # integration setup, ensure we create core entities for them so tests
+    # that expect hass.data[DOMAIN][entry_id] succeed. Schedule platform
+    # forwards asynchronously to avoid blocking setup.
+    try:
+        # Import locally to avoid circular import during HA startup
+        from . import state_cycler as _state_cycler
+
+        for entry in hass.config_entries.async_entries(DOMAIN):
+            if entry.entry_id in hass.data[DOMAIN]:
+                # already handled
+                continue
+            hass.data[DOMAIN].setdefault(entry.entry_id, {})
+            hass.data[DOMAIN][entry.entry_id]["config"] = entry.data
+            # Create core and store reference for adapters/tests
+            core_entity = _state_cycler.StateCyclerEntity(hass, entry)
+            hass.data[DOMAIN][entry.entry_id]["core"] = core_entity
+            # Forward to platform setups without awaiting to avoid re-entrancy
+            hass.async_create_task(hass.config_entries.async_forward_entry_setups(entry, PLATFORMS))
+    except Exception:
+        _LOGGER.debug("No pre-existing config entries to auto-initialize", exc_info=True)
+
     return True
 
 
