@@ -94,6 +94,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     core_entity = _state_cycler.StateCyclerEntity(hass, entry)
 
+    # Store core reference immediately so tests and adapters can access it even
+    # if platform setup later awaits or raises. This makes setup more robust in
+    # test harnesses.
+    hass.data[DOMAIN][entry.entry_id]["core"] = core_entity
+
     # In full HA runtime we add the entity via the EntityComponent so the
     # entity is registered with the entity registry. In lightweight test
     # environments hass may be a partial Mock missing hass.config, which
