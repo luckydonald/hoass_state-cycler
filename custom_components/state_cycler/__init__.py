@@ -6,6 +6,7 @@ import logging
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.dispatcher import async_dispatcher_send
@@ -35,6 +36,19 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up State Cycler from a config entry."""
+    # If the entry is already loaded or in progress, treat as idempotent and return True.
+    try:
+        if entry.state in (ConfigEntryState.LOADED, ConfigEntryState.SETUP_IN_PROGRESS):
+            _LOGGER.debug(
+                "Config entry %s already in state %s; skipping setup",
+                entry.entry_id,
+                entry.state,
+            )
+            return True
+    except Exception:
+        # If entry has no state attribute in some test harnesses, ignore and continue.
+        pass
+
     _LOGGER.warning(f"Setting up State Cycler entry (__init__.py)… {entry=!r}")
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN].setdefault(entry.entry_id, {})
