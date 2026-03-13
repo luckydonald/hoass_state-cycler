@@ -218,8 +218,25 @@ if [ -n "$(git status --porcelain)" ]; then
     found_running=false
     found_query_or_error=false
 
-    # Read commit messages one by one
-    while IFS= read -r commit_msg; do
+    # Read commit messages one by one.
+    # Format: subject <TAB> parent-hashes (space-separated; >1 parent = merge commit)
+    while IFS= read -r line; do
+        commit_msg="${line%%	*}"
+        parents="${line#*	}"
+
+        # Stop at merge commits — scanning past a branch point gives wrong step numbers
+        # and fix-commits would break trying to rebase over a merge.
+        parent_count=$(echo "$parents" | wc -w | tr -d ' ')
+        if [ "$parent_count" -gt 1 ]; then
+            break
+        fi
+
+        # In non-template repos: stop the moment we hit a template-prefixed commit.
+        # Those belong to this template's history, not the downstream project's.
+        if [ -z "$COMMIT_PREFIX" ] && echo "$commit_msg" | grep -qF "$COMMIT_PREFIX_TEMPLATE"; then
+            break
+        fi
+
         # Check for "ai: updated query" or "ai: updated errors" FIRST
         if echo "$commit_msg" | grep -qE "(ai: updated query|ai: updated errors)"; then
             # Found a query/errors update - this means next commit should increment step
@@ -228,8 +245,7 @@ if [ -n "$(git status --porcelain)" ]; then
             continue
         fi
 
-        # Check for new unified format: "✨ ai: [007] Any message… (2/X)"
-        # Works with or without TEMPLATE prefix
+        # Check for unified format: "✨ ai: [007] Any message… (2/5)" or "(2/X)"
         if echo "$commit_msg" | grep -qE "ai: \[[0-9]+\].*\([0-9]+/"; then
             # Extract step and substep from format
             last_step=$(echo "$commit_msg" | sed 's/.*ai: \[\([0-9]*\)\].*/\1/' | sed 's/^0*//')
@@ -249,7 +265,7 @@ if [ -n "$(git status --porcelain)" ]; then
                 break
             fi
         fi
-    done < <(git log --format=%s -20)  # Look at last 20 commits
+    done < <(git log --format="%s%x09%P" -50)  # subject + TAB + parent hashes
 
     # If we didn't find any running commit, start fresh
     if [ "$found_running" = false ]; then

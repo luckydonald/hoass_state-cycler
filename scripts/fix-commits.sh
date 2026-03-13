@@ -270,6 +270,25 @@ except Exception:
 PY
 }
 
+# Helper: check if a string is safe to include directly in a shell command
+# Return 1 if the string is ASCII, printable, and contains no control characters
+# (notably avoids ESC, newlines, etc.) — otherwise return 0.
+is_shell_printable() {
+    python3 - <<PY "$1"
+import sys
+try:
+    s = sys.argv[1]
+    # isprintable covers many cases; additionally ensure ASCII-only
+    ok = s.isascii() and s.isprintable()
+    # disallow any escape/control characters explicitly (just in case)
+    if any(ord(c) < 32 or ord(c) == 127 for c in s):
+        ok = False
+    print(1 if ok else 0)
+except Exception:
+    print(0)
+PY
+}
+
 # Helper: base64-encode a UTF-8 string (no newline)
 b64_of() {
     python3 - <<PY "$1"
@@ -460,7 +479,7 @@ if [ "$INTERACTIVE" = true ]; then
         fi
         if [ "$a" = "-m" ] || [ "$a" = "--message" ]; then
             val="${display_args[$((i+1))]}"
-            if [ "$(is_ascii "$val")" -eq 1 ]; then
+            if [ "$(is_shell_printable "$val")" -eq 1 ]; then
                 esc=$(printf "%q" "-m")
                 vesc=$(printf "%q" "$val")
                 SHELL_JOINED="$SHELL_JOINED $esc $vesc"
@@ -495,7 +514,7 @@ if [ "$INTERACTIVE" = true ]; then
             # lookahead to value
             val="${display_args[$((i+1))]}"
             # Use helper to check ascii-ness robustly
-            if [ "$(is_ascii "$val")" -eq 1 ]; then
+            if [ "$(is_shell_printable "$val")" -eq 1 ]; then
                 esc=$(printf "%q" "-m")
                 vesc=$(printf "%q" "$val")
                 MAKE_JOINED="$MAKE_JOINED $esc $vesc"
@@ -1211,7 +1230,7 @@ if [ "$DRY_RUN" = true ]; then
         fi
         if [ "$a" = "-m" ] || [ "$a" = "--message" ]; then
             val="${FINAL_ARGS[$((j+1))]}"
-            if [ "$(is_ascii "$val")" -eq 1 ]; then
+            if [ "$(is_shell_printable "$val")" -eq 1 ]; then
                 esc=$(printf "%q" "-m")
                 vesc=$(printf "%q" "$val")
                 SHELL_FINAL_JOINED="$SHELL_FINAL_JOINED $esc $vesc"
@@ -1246,7 +1265,7 @@ if [ "$DRY_RUN" = true ]; then
         fi
         if [ "$a" = "-m" ] || [ "$a" = "--message" ]; then
             val="${FINAL_ARGS[$((j+1))]}"
-            if [ "$(is_ascii "$val")" -eq 1 ]; then
+            if [ "$(is_shell_printable "$val")" -eq 1 ]; then
                 esc=$(printf "%q" "-m")
                 vesc=$(printf "%q" "$val")
                 MAKE_FINAL_JOINED="$MAKE_FINAL_JOINED $esc $vesc"
@@ -1549,7 +1568,7 @@ fi
 
 # Create a set of commits to modify (for fast lookup)
 COMMITS_TO_MODIFY=$(mktemp)
-trap "rm -f $COMMITS_TO_MODIFY $REBASE_SCRIPT $QUERY_ERROR_SCRIPT" EXIT
+trap "rm -f $REBASE_SCRIPT $QUERY_ERROR_SCRIPT" EXIT
 
 # Add all commits from our batch
 for commit_hash in "${COMMIT_HASHES[@]}"; do
@@ -1926,7 +1945,7 @@ if git rebase -i "$REBASE_PARENT"; then
         fi
         if [ "$a" = "-m" ] || [ "$a" = "--message" ]; then
             val="${FINAL_ARGS[$((j+1))]}"
-            if [ "$(is_ascii "$val")" -eq 1 ]; then
+            if [ "$(is_shell_printable "$val")" -eq 1 ]; then
                 esc=$(printf "%q" "-m")
                 vesc=$(printf "%q" "$val")
                 SHELL_FINAL_JOINED="$SHELL_FINAL_JOINED $esc $vesc"
@@ -1960,7 +1979,7 @@ if git rebase -i "$REBASE_PARENT"; then
         fi
         if [ "$a" = "-m" ] || [ "$a" = "--message" ]; then
             val="${FINAL_ARGS[$((j+1))]}"
-            if [ "$(is_ascii "$val")" -eq 1 ]; then
+            if [ "$(is_shell_printable "$val")" -eq 1 ]; then
                 esc=$(printf "%q" "-m")
                 vesc=$(printf "%q" "$val")
                 MAKE_FINAL_JOINED="$MAKE_FINAL_JOINED $esc $vesc"

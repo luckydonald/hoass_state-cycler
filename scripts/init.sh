@@ -220,6 +220,39 @@ setup_readme_files() {
     replace_in_file "README.md"
 }
 
+# Function to set up CLAUDE.md
+setup_claude_md() {
+    if [ ! -f "scripts/CLAUDE_PROJECT_TEMPLATE.md" ]; then
+        print_warning "CLAUDE_PROJECT_TEMPLATE.md not found in scripts/ - skipping CLAUDE.md setup"
+        return
+    fi
+
+    # Not the template version if the marker is absent
+    if [ -f "CLAUDE.md" ] && ! grep -q "TEMPLATE_CLAUDE_MD" "CLAUDE.md" 2>/dev/null; then
+        print_info "CLAUDE.md exists but is not the template version - skipping CLAUDE.md setup"
+        return
+    fi
+
+    # Already customized with the new plugin name
+    if [ -f "CLAUDE.md" ] && grep -q "$SNAKE_NAME\|$DASH_NAME\|$DISPLAY_NAME" "CLAUDE.md" 2>/dev/null \
+        && ! grep -q "TEMPLATE_CLAUDE_MD" "CLAUDE.md" 2>/dev/null; then
+        print_info "CLAUDE.md appears to be already customized - leaving it unchanged"
+        return
+    fi
+
+    if [ -f "CLAUDE.md" ]; then
+        print_info "CLAUDE.md is the template version - renaming to CLAUDE_REPO_TEMPLATE.md"
+        mv "CLAUDE.md" "CLAUDE_REPO_TEMPLATE.md"
+        print_success "Renamed CLAUDE.md → CLAUDE_REPO_TEMPLATE.md"
+    fi
+
+    print_info "Copying scripts/CLAUDE_PROJECT_TEMPLATE.md to CLAUDE.md"
+    cp "scripts/CLAUDE_PROJECT_TEMPLATE.md" "CLAUDE.md"
+    print_success "Copied scripts/CLAUDE_PROJECT_TEMPLATE.md → CLAUDE.md"
+
+    replace_in_file "CLAUDE.md"
+}
+
 print_header "Home Assistant Plugin Template Initializer"
 
 # Get the repository root (parent of scripts/)
@@ -649,6 +682,11 @@ FILES_TO_PROCESS=()
 [ -f "pyproject.toml" ] && FILES_TO_PROCESS+=("pyproject.toml")
 [ -f "Makefile" ] && FILES_TO_PROCESS+=("Makefile")
 [ -f "README.md" ] && FILES_TO_PROCESS+=("README.md")
+# CLAUDE.md is handled by setup_claude_md (which calls replace_in_file itself on first run).
+# On re-runs, if CLAUDE.md no longer has the template marker, process it directly.
+if [ -f "CLAUDE.md" ] && ! grep -q "TEMPLATE_CLAUDE_MD" "CLAUDE.md" 2>/dev/null; then
+    FILES_TO_PROCESS+=("CLAUDE.md")
+fi
 
 # Add script files
 [ -f "scripts/commit.sh" ] && FILES_TO_PROCESS+=("scripts/commit.sh")
@@ -784,6 +822,10 @@ done
 print_info "Setting up README files..."
 setup_readme_files
 
+# Handle CLAUDE.md
+print_info "Setting up CLAUDE.md..."
+setup_claude_md
+
 # Rename the custom_components/plugin_template directory
 if [ -d "custom_components/plugin_template" ]; then
     if [ -d "custom_components/$SNAKE_NAME" ]; then
@@ -903,6 +945,7 @@ fi
 
 # Remove template-specific documentation files
 TEMPLATE_DOCS=(
+    "CLAUDE_REPO_TEMPLATE.md"
     "CLEANUP_SUMMARY.md"
     "TRANSFORMATION_COMPLETE.md"
     "POST_TRANSFORMATION_CHECKLIST.md"

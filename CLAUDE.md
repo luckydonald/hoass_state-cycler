@@ -12,7 +12,7 @@ State Cycler is a Home Assistant custom integration that cycles through a list o
 ```bash
 make setup        # Full setup (frontend + backend)
 make setup-py     # Python only (uv sync)
-make setup-ts     # TypeScript only (yarn install)
+make setup-ts     # TypeScript only (uses corepack + yarn install)
 ```
 
 ### Testing
@@ -31,6 +31,12 @@ RUN_PLAYWRIGHT=1 make test-py
 ```
 
 ### Linting & Formatting
+```
+make lint           # lint Python + TypeScript
+make format         # format Python (ruff --fix) + TypeScript (dprint + eslint --fix)
+```
+
+In detail:
 ```bash
 make lint         # All linters
 make lint-py      # ruff check + format check
@@ -47,6 +53,21 @@ make build        # Build frontend (vite)
 make commit       # Structured commit via scripts/commit.sh
 make release      # Bump version, lint, build, push
 ```
+
+If `make lint-ts` / `make format-ts` fail with "command not found", run `make setup-ts` first.
+
+## Commit workflow
+
+**Run `make commit` after **every** file change**, without asking for confirmation — it is auto-approved by the IDE. Run it once per file operation, immediately after the change, before any error checking.
+
+The commit script produces structured messages:
+- Changes to `ai/query.md` → `🤌 ai: updated query`
+- Changes to `ai/errors.md` → `🐞 ai: updated errors`
+- All other changes → `✨ ai: [{padded_step}] {message} ({substep}/{total_substeps})`
+- Lock files → `🔏 Updated package versions for frontend/backend.`
+
+`make fix-commits` (alias: `make commit-fix`) interactively rebases the latest batch of AI commits to replace "running…" with a real message and fill in the total substep count. Supports `--start-commit`, `--end-commit`, `--number-search`, `--number-override`, `--ignore-blocks`, `--dry-run`, `--interactive`, and `-m`.
+That one is to be used by the user only.
 
 ## Architecture
 
@@ -96,18 +117,25 @@ title: Optional Title
 - All async tests run automatically via `asyncio_mode = "auto"` in `pyproject.toml`
 - Coverage is always collected; reports go to `htmlcov/`
 
-## ai/ Folder
+### AI workflow files
 
 The `ai/` folder contains AI development artifacts:
-- `query.md` — original project specification and coding guidelines (early-return style, Vue `<script setup>`, Python 3.12+ async, `make commit` after every file change)
-- `PROGRESS.md` — checklist of completed and pending tasks
-- `errors.md` — log of errors encountered during AI development
-- `references/` — reference HA integration examples used during development
+- `ai/query.md` — original project specification and coding guidelines (early-return style, Vue `<script setup>`, Python 3.12+ async, `make commit` after every file change)
+- `ai/PROGRESS.md` — checklist of completed and pending tasks
+- `ai/errors.md` — log of errors encountered during AI development
+- `ai/references/` — reference HA integration examples used during development
 
-## Key Conventions
+## Key Conventions/Code style guidelines
 
 - **Early-return pattern** preferred over deep nesting; use `continue`/`return`/`break` in loops.
 - **Per-cycler async locks** in the core prevent race conditions on concurrent service calls.
 - **State snapshots** (brightness, color, etc.) are captured before turning an entity off so it can be restored when cycled back.
 - Playwright tests are marked `@pytest.mark.playwright` and excluded from normal `make test-py` runs.
 - The `pytest-homeassistant-custom-component` version is pinned `<0.13.307` to stay on Python 3.12 support.
+- TypeScript/Vue: `<script setup lang="ts">` SFCs; use `ha-*` web components where available; import HA types from `homeassistant` package; snake_case allowed for property/type-property names (ESLint exception already configured).
+- CSS variable names with `--` prefix are exempt from the `naming-convention` rule.
+- `ha-*` elements are web components, not Vue components — do not use Vue slot syntax (`<template #slot>`) on them.
+
+## Branch naming
+
+The default branch is `mane` (not `main`).
