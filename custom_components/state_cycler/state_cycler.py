@@ -837,7 +837,6 @@ class StateCyclerEntity(RestoreEntity, Entity):
             try:
                 upd = getattr(adapter, "_async_update_from_core", None)
                 if callable(upd):
-
                     # Ensure adapter updates run on HA's event loop thread to avoid
                     # calling async_write_ha_state from executor threads.
                     try:

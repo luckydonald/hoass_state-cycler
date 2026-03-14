@@ -48,9 +48,13 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
             core_entity = _state_cycler.StateCyclerEntity(hass, entry)
             hass.data[DOMAIN][entry.entry_id]["core"] = core_entity
             # Forward to platform setups without awaiting to avoid re-entrancy
-            hass.async_create_task(hass.config_entries.async_forward_entry_setups(entry, PLATFORMS))
+            hass.async_create_task(
+                hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+            )
     except Exception:
-        _LOGGER.debug("No pre-existing config entries to auto-initialize", exc_info=True)
+        _LOGGER.debug(
+            "No pre-existing config entries to auto-initialize", exc_info=True
+        )
 
     return True
 
