@@ -32,7 +32,7 @@ jobs:
           if ! git diff --quiet; then
             git add README.md
             git commit -m "chore: update compatibility table from hacs.json"
-            git push
+            git push origin HEAD:mane
           else
             echo "No changes to commit"
           fi
