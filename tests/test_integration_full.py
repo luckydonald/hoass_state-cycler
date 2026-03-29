@@ -50,8 +50,8 @@ async def test_multiple_cyclers_operate_independently(hass: HomeAssistant):
     entry1.add_to_hass(hass)
     entry2.add_to_hass(hass)
 
+    # Setting up entry1 triggers domain load, which auto-sets-up all domain entries
     assert await hass.config_entries.async_setup(entry1.entry_id)
-    assert await hass.config_entries.async_setup(entry2.entry_id)
     await hass.async_block_till_done()
 
     core1 = hass.data[DOMAIN][entry1.entry_id]["core"]
@@ -211,10 +211,11 @@ async def test_cycle_mode_timeout_and_future_cycle(hass: HomeAssistant):
     await asyncio.sleep(0.02)
     assert core._cycle_mode_active is False
 
-    # After timeout, calling cycle again will start cycle mode and move to next
+    # After timeout, calling cycle turns the cycler OFF (spec: pending-off mode)
     await core.async_cycle()
     await hass.async_block_till_done()
-    assert core._cycle_mode_active is True
+    assert core._current_index == -1
+    assert core._cycle_mode_active is False
 
     # cleanup
     await hass.config_entries.async_unload(entry.entry_id)
