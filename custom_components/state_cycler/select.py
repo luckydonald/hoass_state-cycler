@@ -16,6 +16,7 @@ from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
+from homeassistant.helpers.entity import DeviceInfo
 
 from .const import (
     DOMAIN,
@@ -86,6 +87,15 @@ class StateCyclerSelect(SelectEntity):
     @property
     def unique_id(self) -> str:
         return self._unique_id
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        return DeviceInfo(
+            identifiers={(DOMAIN, self._entry.entry_id)},
+            name=self._name,
+            manufacturer="Custom",
+            model="State Cycler (Selector)",
+        )
 
     @property
     def options(self) -> list[str]:
