@@ -21,111 +21,33 @@ CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
     """Set up the State Cycler component."""
-    _LOGGER.warning(f"Setting up State Cycler (__init__.py)… {config=!r}")
-
     hass.data.setdefault(DOMAIN, {})
-
-    # Create and store the EntityComponent for the custom domain so we can add core entities
     if "component" not in hass.data[DOMAIN]:
-        component = EntityComponent(_LOGGER, DOMAIN, hass)
-        hass.data[DOMAIN]["component"] = component
-
-    # If test harness (or other code) added MockConfigEntry entries before
-    # integration setup, ensure we create core entities for them so tests
-    # that expect hass.data[DOMAIN][entry_id] succeed. Schedule platform
-    # forwards asynchronously to avoid blocking setup.
-    try:
-        # Import locally to avoid circular import during HA startup
-        from . import state_cycler as _state_cycler
-
-        for entry in hass.config_entries.async_entries(DOMAIN):
-            if entry.entry_id in hass.data[DOMAIN]:
-                # already handled
-                continue
-            hass.data[DOMAIN].setdefault(entry.entry_id, {})
-            hass.data[DOMAIN][entry.entry_id]["config"] = entry.data
-            # Create core and store reference for adapters/tests
-            core_entity = _state_cycler.StateCyclerEntity(hass, entry)
-            hass.data[DOMAIN][entry.entry_id]["core"] = core_entity
-            # Forward to platform setups without awaiting to avoid re-entrancy
-            hass.async_create_task(
-                hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-            )
-    except Exception:
-        _LOGGER.debug(
-            "No pre-existing config entries to auto-initialize", exc_info=True
-        )
-
+        hass.data[DOMAIN]["component"] = EntityComponent(_LOGGER, DOMAIN, hass)
     return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up State Cycler from a config entry."""
-
-    _LOGGER.warning(f"Setting up State Cycler entry (__init__.py)… {entry=!r}")
-    hass.data.setdefault(DOMAIN, {})
-    hass.data[DOMAIN].setdefault(entry.entry_id, {})
-
-    # If we've already created a core for this entry, treat setup as idempotent
-    if (
-        entry.entry_id in hass.data[DOMAIN]
-        and "core" in hass.data[DOMAIN][entry.entry_id]
-    ):
-        _LOGGER.debug(
-            "Core for entry %s already exists; skipping re-setup", entry.entry_id
-        )
-        # Still attempt to forward setups to ensure platforms are initialized
-        try:
-            await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-        except Exception:
-            # Best-effort in test environments
-            pass
-        return True
-
-    # Create the authoritative core entity via the EntityComponent
     from . import state_cycler as _state_cycler
 
-    # Ensure component exists (tests may not have called async_setup)
-    if "component" not in hass.data[DOMAIN]:
-        hass.data[DOMAIN]["component"] = EntityComponent(_LOGGER, DOMAIN, hass)
-
-    component: EntityComponent = hass.data[DOMAIN]["component"]
-    # Ensure per-entry storage and persist config for tests that call
-    # async_setup_entry directly on the integration root.
+    hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN].setdefault(entry.entry_id, {})
     hass.data[DOMAIN][entry.entry_id]["config"] = entry.data
 
-    core_entity = _state_cycler.StateCyclerEntity(hass, entry)
+    if "component" not in hass.data[DOMAIN]:
+        hass.data[DOMAIN]["component"] = EntityComponent(_LOGGER, DOMAIN, hass)
+    component: EntityComponent = hass.data[DOMAIN]["component"]
 
-    # Store core reference immediately so tests and adapters can access it even
-    # if platform setup later awaits or raises. This makes setup more robust in
-    # test harnesses.
+    core_entity = _state_cycler.StateCyclerEntity(hass, entry)
     hass.data[DOMAIN][entry.entry_id]["core"] = core_entity
 
-    # In full HA runtime we add the entity via the EntityComponent so the
-    # entity is registered with the entity registry. In lightweight test
-    # environments hass may be a partial Mock missing hass.config, which
-    # causes storage/registry initialization to fail. Detect that and avoid
-    # adding the entity in that case; store the core reference so adapters
-    # can still find it.
-    should_add = (
-        hasattr(hass, "config") and getattr(hass.config, "config_dir", None) is not None
-    )
-    if should_add:
+    cfg_dir = getattr(getattr(hass, "config", None), "config_dir", None)
+    if isinstance(cfg_dir, str) and cfg_dir:
         await component.async_add_entities([core_entity])
-        hass.data[DOMAIN][entry.entry_id]["core"] = core_entity
-    else:
-        # Test environment: don't add to component; just store core
-        hass.data[DOMAIN][entry.entry_id]["core"] = core_entity
 
-    # Ensure config is persisted for tests that assert its presence
-    hass.data[DOMAIN][entry.entry_id].setdefault("config", entry.data)
-
-    # Forward setup to adapter platforms (select/switch/button/sensor)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-
     entry.async_on_unload(entry.add_update_listener(async_update_options))
-
     return True
 
 
