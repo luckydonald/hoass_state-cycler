@@ -558,11 +558,14 @@ if [ "$INTERACTIVE" = true ]; then
         # Build a small heredoc that decodes and runs the script; print without executing
         printf "»%s %s\n" "" "python3 - <<'PY'" >/dev/null 2>&1 || true
         # Construct printed heredoc content
-        PY_CONTENT="import base64,subprocess\nargs=["
+        PY_CONTENT="import base64,subprocess\nbargs=["
         for b in "${py_b64_args[@]}"; do
-            PY_CONTENT+="base64.b64decode('$b').decode('utf-8'),"
+            PY_CONTENT+="'$b',"
         done
-        PY_CONTENT+="]\nsubprocess.run(['./scripts/fix-commits.sh']+args)\n"
+        PY_CONTENT+="]\n"
+        PY_CONTENT+="args=[base64.b64decode(barg).decode('utf-8') for barg in bargs]\n"
+        PY_CONTENT+="args=['./scripts/fix-commits.sh'] + args\n"
+        PY_CONTENT+="subprocess.run(args)\n"
         # Use print_code to show the heredoc (preserve newlines)
         # Surround with PY markers as printed to the user
         print_code "python3 - <<'PY'\n${PY_CONTENT}PY"
