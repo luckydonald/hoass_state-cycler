@@ -1,0 +1,16 @@
+{
+  "outputStyle": "default",
+  "prefersReducedMotion": true,
+  "permissions": {
+    "allow": [
+      "Bash(make commit)",
+      "Bash(make commit:*)",
+      "Bash(echo 'q' | make test:*)",
+      "Bash(echo 'q' | make test-ts)",
+      "Bash(echo 'q' | make test-py)",
+      "Bash(git push origin mane)",
+      "Bash(uv run pytest tests/test_*.py -q --no-header --tb=short -m \"not playwright\")",
+      "Bash(uv run pytest -q --no-header --tb=no -m \"not playwright\")"
+    ]
+  }
+}
