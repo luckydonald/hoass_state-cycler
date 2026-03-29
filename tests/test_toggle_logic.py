@@ -106,7 +106,7 @@ class TestNext:
 
     async def test_fires_cycled_event(self, hass: HomeAssistant) -> None:
         fired: list = []
-        hass.bus.listen(EVENT_CYCLED, fired.append)
+        hass.bus.async_listen(EVENT_CYCLED, fired.append)
         core = _core(hass)
         core._current_index = 0
         await core.async_next()
@@ -117,7 +117,7 @@ class TestNext:
 
     async def test_wrapped_true_on_wrap(self, hass: HomeAssistant) -> None:
         fired: list = []
-        hass.bus.listen(EVENT_CYCLED, fired.append)
+        hass.bus.async_listen(EVENT_CYCLED, fired.append)
         core = _core(hass)
         core._current_index = 2
         await core.async_next()
@@ -126,7 +126,7 @@ class TestNext:
 
     async def test_wrapped_false_on_normal_advance(self, hass: HomeAssistant) -> None:
         fired: list = []
-        hass.bus.listen(EVENT_CYCLED, fired.append)
+        hass.bus.async_listen(EVENT_CYCLED, fired.append)
         core = _core(hass)
         core._current_index = 0
         await core.async_next()
@@ -177,7 +177,7 @@ class TestPrev:
 
     async def test_fires_cycled_event(self, hass: HomeAssistant) -> None:
         fired: list = []
-        hass.bus.listen(EVENT_CYCLED, fired.append)
+        hass.bus.async_listen(EVENT_CYCLED, fired.append)
         core = _core(hass)
         core._current_index = 2
         await core.async_prev()
@@ -187,7 +187,7 @@ class TestPrev:
 
     async def test_wrapped_true_on_wrap(self, hass: HomeAssistant) -> None:
         fired: list = []
-        hass.bus.listen(EVENT_CYCLED, fired.append)
+        hass.bus.async_listen(EVENT_CYCLED, fired.append)
         core = _core(hass)
         core._current_index = 0
         await core.async_prev()
@@ -226,7 +226,7 @@ class TestTo:
 
     async def test_fires_event_with_command_to(self, hass: HomeAssistant) -> None:
         fired: list = []
-        hass.bus.listen(EVENT_CYCLED, fired.append)
+        hass.bus.async_listen(EVENT_CYCLED, fired.append)
         core = _core(hass)
         await core._async_to_index(1)
         await hass.async_block_till_done()
@@ -271,7 +271,7 @@ class TestOff:
 
     async def test_fires_cycled_event_command_off(self, hass: HomeAssistant) -> None:
         fired: list = []
-        hass.bus.listen(EVENT_CYCLED, fired.append)
+        hass.bus.async_listen(EVENT_CYCLED, fired.append)
         core = _core(hass)
         core._current_index = 0
         await core.async_turn_off()
@@ -387,7 +387,7 @@ class TestCycle:
 
     async def test_timeout_fires_cycle_timeout_event(self, hass: HomeAssistant) -> None:
         fired: list = []
-        hass.bus.listen(EVENT_CYCLE_TIMEOUT, fired.append)
+        hass.bus.async_listen(EVENT_CYCLE_TIMEOUT, fired.append)
         core = _core(hass)
         core._current_index = 1
         await core._cycle_timeout()
@@ -397,7 +397,7 @@ class TestCycle:
 
     async def test_timeout_event_carries_current_entity_id(self, hass: HomeAssistant) -> None:
         fired: list = []
-        hass.bus.listen(EVENT_CYCLE_TIMEOUT, fired.append)
+        hass.bus.async_listen(EVENT_CYCLE_TIMEOUT, fired.append)
         core = _core(hass)
         core._current_index = 0
         await core._cycle_timeout()
@@ -425,7 +425,7 @@ class TestCycle:
 
     async def test_cycle_mode_first_call_fires_cycle_mode_event(self, hass: HomeAssistant) -> None:
         fired: list = []
-        hass.bus.listen(EVENT_CYCLED, fired.append)
+        hass.bus.async_listen(EVENT_CYCLED, fired.append)
         core = _core(hass)
         await core.async_cycle()
         await hass.async_block_till_done()
@@ -516,7 +516,7 @@ class TestAttributes:
 class TestCycledEventFields:
     async def test_all_required_fields_present(self, hass: HomeAssistant) -> None:
         fired: list = []
-        hass.bus.listen(EVENT_CYCLED, fired.append)
+        hass.bus.async_listen(EVENT_CYCLED, fired.append)
         core = _core(hass)
         core._current_index = 0
         await core.async_next()
@@ -529,7 +529,7 @@ class TestCycledEventFields:
 
     async def test_mode_direct_on_next(self, hass: HomeAssistant) -> None:
         fired: list = []
-        hass.bus.listen(EVENT_CYCLED, fired.append)
+        hass.bus.async_listen(EVENT_CYCLED, fired.append)
         core = _core(hass)
         core._current_index = 0
         await core.async_next()
@@ -538,7 +538,7 @@ class TestCycledEventFields:
 
     async def test_mode_toggle_on_turn_off(self, hass: HomeAssistant) -> None:
         fired: list = []
-        hass.bus.listen(EVENT_CYCLED, fired.append)
+        hass.bus.async_listen(EVENT_CYCLED, fired.append)
         core = _core(hass)
         core._current_index = 0
         await core.async_turn_off()
@@ -547,7 +547,7 @@ class TestCycledEventFields:
 
     async def test_timer_none_on_manual_action(self, hass: HomeAssistant) -> None:
         fired: list = []
-        hass.bus.listen(EVENT_CYCLED, fired.append)
+        hass.bus.async_listen(EVENT_CYCLED, fired.append)
         core = _core(hass)
         core._current_index = 0
         await core.async_next()
@@ -556,7 +556,7 @@ class TestCycledEventFields:
 
     async def test_index_difference_positive_going_forward(self, hass: HomeAssistant) -> None:
         fired: list = []
-        hass.bus.listen(EVENT_CYCLED, fired.append)
+        hass.bus.async_listen(EVENT_CYCLED, fired.append)
         core = _core(hass)
         core._current_index = 0
         await core.async_next()
@@ -565,7 +565,7 @@ class TestCycledEventFields:
 
     async def test_last_entity_id_in_event(self, hass: HomeAssistant) -> None:
         fired: list = []
-        hass.bus.listen(EVENT_CYCLED, fired.append)
+        hass.bus.async_listen(EVENT_CYCLED, fired.append)
         core = _core(hass)
         core._current_index = 0
         await core.async_next()
@@ -599,31 +599,31 @@ class TestDeviceGrouping:
         from custom_components.state_cycler.switch import StateCyclerSwitch
 
         adapter = StateCyclerSwitch(hass, _entry())
-        assert (DOMAIN, "eid") in adapter.device_info.identifiers
+        assert (DOMAIN, "eid") in adapter.device_info["identifiers"]
 
     def test_raw_sensor_identifier(self, hass: HomeAssistant) -> None:
         from custom_components.state_cycler.sensor import StateCyclerRawSensor
 
         adapter = StateCyclerRawSensor(hass, _entry())
-        assert (DOMAIN, "eid") in adapter.device_info.identifiers
+        assert (DOMAIN, "eid") in adapter.device_info["identifiers"]
 
     def test_friendly_sensor_identifier(self, hass: HomeAssistant) -> None:
         from custom_components.state_cycler.sensor import StateCyclerFriendlySensor
 
         adapter = StateCyclerFriendlySensor(hass, _entry())
-        assert (DOMAIN, "eid") in adapter.device_info.identifiers
+        assert (DOMAIN, "eid") in adapter.device_info["identifiers"]
 
     def test_next_button_identifier(self, hass: HomeAssistant) -> None:
         from custom_components.state_cycler.button import StateCyclerNextButton
 
         adapter = StateCyclerNextButton(hass, _entry())
-        assert (DOMAIN, "eid") in adapter.device_info.identifiers
+        assert (DOMAIN, "eid") in adapter.device_info["identifiers"]
 
     def test_prev_button_identifier(self, hass: HomeAssistant) -> None:
         from custom_components.state_cycler.button import StateCyclerPrevButton
 
         adapter = StateCyclerPrevButton(hass, _entry())
-        assert (DOMAIN, "eid") in adapter.device_info.identifiers
+        assert (DOMAIN, "eid") in adapter.device_info["identifiers"]
 
     def test_all_adapters_share_same_identifier(self, hass: HomeAssistant) -> None:
         """Every adapter must group under the same HA device as the core."""
