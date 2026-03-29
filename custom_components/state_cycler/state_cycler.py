@@ -186,6 +186,7 @@ class StateCyclerEntity(RestoreEntity, Entity):
         self._timer_cancel: Any | None = None
         self._cycle_mode_active: bool = False
         self._cycle_timer_cancel: Any | None = None
+        self._pending_cycle_off: bool = False
 
         # Adapter registration and locking
         self._adapters: dict[str, Any] = {}
@@ -634,6 +635,12 @@ class StateCyclerEntity(RestoreEntity, Entity):
 
     async def async_cycle(self, call: ServiceCall | None = None) -> None:
         """Cycle action with timer logic."""
+        if self._current_index != -1 and self._pending_cycle_off:
+            # Timeout has elapsed — next press turns off instead of cycling forward
+            self._pending_cycle_off = False
+            self._cycle_mode_active = False
+            await self.async_turn_off()
+            return
         if self._current_index == -1:
             # Turn on first state
             if self._states:
@@ -694,6 +701,7 @@ class StateCyclerEntity(RestoreEntity, Entity):
     async def _cycle_timeout(self) -> None:
         """Handle cycle timeout - next cycle will turn off."""
         self._cycle_mode_active = False
+        self._pending_cycle_off = True
         self._cycle_timer_cancel = None
 
         self.hass.bus.async_fire(
