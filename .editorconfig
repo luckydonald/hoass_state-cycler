@@ -17,3 +17,7 @@ tab_width = 4
 
 [*.md]
 trim_trailing_whitespace = false
+
+[ai/**/*.md]
+trim_trailing_whitespace = false
+insert_final_newline = true
