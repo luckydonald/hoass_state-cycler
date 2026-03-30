@@ -1,4 +1,144 @@
-# State Cycler for Home Assistant
+# 𝕊⟿ 
+# 𝕊⤵ 
+# 𝕊⤴ 
+# ⥑𝕊⥏ 
+# ⥑𝕤⥏ 
+# ↿𝕤⇂ 
+# 𝕤⃔⃕
+# 𝕤⃔
+# 𝕤͍
+# 𝕤̮̑
+# 𝕤̯̆
+# 𝕤⃡
+# 𝕤͍⃡
+# 𝕤⃕
+# 𝕤⃕ DIS
+# 𝕤⃗
+# 𝕤⃗⃖
+# 𝕤͍⃗⃖
+# 𝕤
+# 𝕊⭥ 
+# 𝕊⮃ 
+# 𝕊⋐ 
+#〖𝕊〗
+# ⟪𝕊⟫
+# 𝕊⤸
+# 𝕊↺
+# 𝕊↻
+# 𝕊
+# ↬𝕊
+# 𝕊↺
+# ≶tate ⊂ycler 
+# ≶tate ⋘ycler 
+
+
+~~📄TEMPLATE | 🧮¹ | 👩‍💻Improved base64-escaped python script.~~ 2
+
+~~📄TEMPLATE | 🔢¹ | 👩‍💻Improved base64-escaped python script.~~ 3
+
+📄TEMPLATE | ⏯️¹ | 👩‍💻Improved base64-escaped python script.
+
+📄TEMPLATE | ⏯¹ | 👩‍💻Improved base64-escaped python script.
+
+📄TEMPLATE | ↪️¹ | 👩‍💻Improved base64-escaped python script.
+
+📄TEMPLATE | 🔁¹ | 👩‍💻Improved base64-escaped python script.
+
+~~📄TEMPLATE | ♾️¹ | 👩‍💻Improved base64-escaped python script.~~ 4
+
+~~📄TEMPLATE | 🔙¹ | 👩‍💻Improved base64-escaped python script.~~ 1
+
+
+📄TEMPLATE | ⏯¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ▚¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ▞¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ▱¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ◊¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ◇¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ◈¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ◉¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ◐¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ☉¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⨀¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ◪¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ◱¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ◲¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ◰¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ◳¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⇋¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⇌¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⇆¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⇅¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⇅¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⇥¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⤞¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⤠¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⤵¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⤸¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⥂¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⥃¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⥄¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⥅¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⭆¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⭤¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⮃¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⮂¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⮂¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ≣¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ≡¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ≫¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ≶¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ≷¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⋇¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⋚¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⪑¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⪡¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⪢¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⨇¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⨓¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⨳¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⌗¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⟆¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⟗¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⧑¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⧓¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⧗¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⧖¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⧚¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⧪¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⧺¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⧻¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⌇¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | 𝓢¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | 𝕊¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⌭¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⌸¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⌹¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⌺¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⌻¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⍈¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⍐¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⏍¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⍚¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⏱¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⏲¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⏻¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⏿¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | �¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ☵¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ☷¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ☷¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ☲¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⚏¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⚯¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⛓¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⛕¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ⩇¹ | 👩‍💻Improved base64-escaped python script.  
+📄TEMPLATE | ➰¹ | 👩‍💻Improved base64-escaped python script.  
+
+
+
+## State Cycler for Home Assistant
 
 > A Home Assistant integration that allows cycling through a list of entities (lights, switches, scenes) with manual and automatic controls, including a custom Lovelace card for easy interaction.
 
