@@ -121,3 +121,7 @@ Merge the python-tests into the CI pipleline, so that they run on each PR.
 ❯ /init, also check out the @ai/ folder.
 
 ———
+
+❯ What are automated test options for HACS plugins?
+❯ Alright, I want you to build unittests for the state toggling logic. Ignore existing tests completely, just add new ones as if they are not there. Do not even read them. Just concentrate on the concepts
+  described in @ai/query.md , that the python module does those.Btw, it shall be a device or how it's called which groups all the sensors and toggles and entities and whatnot into one, if it is not yet.
